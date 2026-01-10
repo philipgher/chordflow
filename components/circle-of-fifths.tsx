@@ -3,7 +3,6 @@
 interface CircleOfFifthsProps {
   selectedChord: string;
   onChordSelect: (chord: string) => void;
-  unlockedChords: string[];
 }
 
 const CIRCLE_MAJOR = [
@@ -38,7 +37,6 @@ const CIRCLE_MINOR = [
 export function CircleOfFifths({
   selectedChord,
   onChordSelect,
-  unlockedChords,
 }: CircleOfFifthsProps) {
   const radius = 140;
   const innerRadius = 90;
@@ -54,7 +52,7 @@ export function CircleOfFifths({
   };
 
   return (
-    <div className="bg-card rounded-xl border border-border p-6">
+    <div className="p-6">
       <h3 className="font-semibold text-foreground mb-4 text-center">
         Circle of Fifths
       </h3>
@@ -88,14 +86,13 @@ export function CircleOfFifths({
           {/* Major chords (outer) */}
           {CIRCLE_MAJOR.map((chord, i) => {
             const pos = getPosition(i, radius);
-            const isUnlocked = unlockedChords.includes(chord);
             const isSelected = selectedChord === chord;
 
             return (
               <g
                 key={chord}
-                onClick={() => isUnlocked && onChordSelect(chord)}
-                style={{ cursor: isUnlocked ? "pointer" : "not-allowed" }}
+                onClick={() => onChordSelect(chord)}
+                style={{ cursor: "pointer" }}
               >
                 <circle
                   cx={pos.x}
@@ -106,9 +103,7 @@ export function CircleOfFifths({
                     ${
                       isSelected
                         ? "fill-primary"
-                        : isUnlocked
-                          ? "fill-secondary hover:fill-muted"
-                          : "fill-muted opacity-30"
+                        : "fill-secondary hover:fill-muted"
                     }
                   `}
                 />
@@ -118,11 +113,7 @@ export function CircleOfFifths({
                   textAnchor="middle"
                   dominantBaseline="central"
                   className={`text-sm font-bold ${
-                    isSelected
-                      ? "fill-primary-foreground"
-                      : isUnlocked
-                        ? "fill-foreground"
-                        : "fill-muted-foreground"
+                    isSelected ? "fill-primary-foreground" : "fill-foreground"
                   }`}
                 >
                   {chord}
@@ -134,14 +125,13 @@ export function CircleOfFifths({
           {/* Minor chords (inner) */}
           {CIRCLE_MINOR.map((chord, i) => {
             const pos = getPosition(i, innerRadius);
-            const isUnlocked = unlockedChords.includes(chord);
             const isSelected = selectedChord === chord;
 
             return (
               <g
                 key={chord}
-                onClick={() => isUnlocked && onChordSelect(chord)}
-                style={{ cursor: isUnlocked ? "pointer" : "not-allowed" }}
+                onClick={() => onChordSelect(chord)}
+                style={{ cursor: "pointer" }}
               >
                 <circle
                   cx={pos.x}
@@ -152,9 +142,7 @@ export function CircleOfFifths({
                     ${
                       isSelected
                         ? "fill-primary"
-                        : isUnlocked
-                          ? "fill-secondary hover:fill-muted"
-                          : "fill-muted opacity-30"
+                        : "fill-secondary hover:fill-muted"
                     }
                   `}
                 />
@@ -164,11 +152,7 @@ export function CircleOfFifths({
                   textAnchor="middle"
                   dominantBaseline="central"
                   className={`text-xs font-medium ${
-                    isSelected
-                      ? "fill-primary-foreground"
-                      : isUnlocked
-                        ? "fill-foreground"
-                        : "fill-muted-foreground"
+                    isSelected ? "fill-primary-foreground" : "fill-foreground"
                   }`}
                 >
                   {chord}

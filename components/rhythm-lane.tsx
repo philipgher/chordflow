@@ -137,7 +137,7 @@ export function RhythmLane({
         </div>
       </div>
 
-      <div ref={containerRef} className="relative h-[400px] bg-secondary/30">
+      <div ref={containerRef} className="relative h-100 bg-secondary/30">
         {/* Lane dividers */}
         <div className="absolute inset-0 flex">
           {[0, 1, 2, 3].map((lane) => (
@@ -159,8 +159,8 @@ export function RhythmLane({
         </div>
 
         {/* Hit zone line */}
-        <div className="absolute bottom-[30px] left-0 right-0 h-[2px] bg-primary shadow-[0_0_10px_var(--primary)]" />
-        <div className="absolute bottom-[20px] left-0 right-0 h-[30px] bg-primary/10 border-y border-primary/30" />
+        <div className="absolute bottom-7.5 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_var(--primary)]" />
+        <div className="absolute bottom-5 left-0 right-0 h-7.5 bg-primary/10 border-y border-primary/30" />
 
         {/* Falling notes */}
         {notes.map((note) => (

@@ -6,16 +6,14 @@ import { PianoWithRhythm } from "../piano-with-rhythm";
 import { SheetMusic } from "../sheet-music";
 import { ChordTheoryPanel } from "../chord-theory-panel";
 import { ControlPanel } from "../control-panel";
-import { Lock, CheckCircle2, ArrowRight } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 
 interface ProgressionsTabProps {
-  unlockedChords: string[];
   unlockedProgressions: string[];
   onProgressionUnlocked: (progression: string) => void;
 }
 
 export function ProgressionsTab({
-  unlockedChords,
   unlockedProgressions,
   onProgressionUnlocked,
 }: ProgressionsTabProps) {
@@ -28,23 +26,16 @@ export function ProgressionsTab({
   const currentChordName = progression.chords[currentChordIndex];
   const currentChord = CHORD_DATA[currentChordName];
 
-  const canUseProgression = (progKey: string) => {
-    const prog = PROGRESSIONS[progKey];
-    return prog.chords.every((chord) => unlockedChords.includes(chord));
-  };
-
   const handleProgressionSelect = useCallback(
     (key: string) => {
-      if (canUseProgression(key)) {
-        setSelectedProgression(key);
-        setCurrentChordIndex(0);
-        setIsPlaying(false);
-        if (!unlockedProgressions.includes(key)) {
-          onProgressionUnlocked(key);
-        }
+      setSelectedProgression(key);
+      setCurrentChordIndex(0);
+      setIsPlaying(false);
+      if (!unlockedProgressions.includes(key)) {
+        onProgressionUnlocked(key);
       }
     },
-    [unlockedChords, unlockedProgressions, onProgressionUnlocked],
+    [unlockedProgressions, onProgressionUnlocked],
   );
 
   const handleChordChange = useCallback((index: number) => {
@@ -65,7 +56,6 @@ export function ProgressionsTab({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {Object.entries(PROGRESSIONS).map(([key, prog]) => {
-            const canUse = canUseProgression(key);
             const isSelected = selectedProgression === key;
             const isUnlocked = unlockedProgressions.includes(key);
 
@@ -73,20 +63,16 @@ export function ProgressionsTab({
               <button
                 key={key}
                 onClick={() => handleProgressionSelect(key)}
-                disabled={!canUse}
                 className={`
                   relative p-4 rounded-lg text-left transition-all
                   ${
-                    !canUse
-                      ? "bg-muted opacity-50 cursor-not-allowed"
-                      : isSelected
-                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                        : "bg-secondary hover:bg-muted"
+                    isSelected
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                      : "bg-secondary hover:bg-muted"
                   }
                 `}
               >
-                {!canUse && <Lock className="w-4 h-4 absolute top-2 right-2" />}
-                {isUnlocked && canUse && !isSelected && (
+                {isUnlocked && !isSelected && (
                   <CheckCircle2 className="w-4 h-4 absolute top-2 right-2 text-green-500" />
                 )}
 
@@ -105,9 +91,7 @@ export function ProgressionsTab({
                         className={`text-xs font-medium ${
                           isSelected
                             ? "text-primary-foreground"
-                            : unlockedChords.includes(chord)
-                              ? "text-foreground"
-                              : "text-muted-foreground"
+                            : "text-foreground"
                         }`}
                       >
                         {chord}
@@ -184,10 +168,8 @@ export function ProgressionsTab({
             currentChordIndex={currentChordIndex}
             isPlaying={isPlaying}
             tempo={tempo}
-            highlightedNotes={currentChord.notes}
             chordName={currentChordName}
             onChordChange={handleChordChange}
-            onNotePlay={() => {}}
           />
         </div>
       </div>

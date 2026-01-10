@@ -184,7 +184,7 @@ export function TheoryKeyboard({ chord, chordName }: TheoryKeyboardProps) {
       {/* Interval visualization */}
       <div className="mt-6 flex justify-center gap-8">
         {chord.intervals.map((interval, i) => (
-          <div key={i} className="text-center">
+          <div key={i} className="text-center flex flex-col items-center">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-2">
               <span className="text-lg font-bold text-primary">
                 {chord.notes[i]}

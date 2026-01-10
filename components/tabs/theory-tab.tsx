@@ -9,35 +9,49 @@ import { CircleOfFifths } from "../circle-of-fifths";
 import { Lock, CheckCircle2, Sparkles } from "lucide-react";
 
 interface TheoryTabProps {
-  unlockedChords: string[];
   masteredChords: string[];
   onChordMastered: (chord: string) => void;
-  onChordUnlocked: (chord: string) => void;
 }
 
-const ALL_CHORDS = ["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm"];
+const MAJOR_CHORDS = [
+  "A",
+  "Ab",
+  "B",
+  "Bb",
+  "C",
+  "D",
+  "Db",
+  "E",
+  "Eb",
+  "F",
+  "F#",
+  "G",
+];
+const MINOR_CHORDS = [
+  "Am",
+  "Bm",
+  "Bbm",
+  "Cm",
+  "C#m",
+  "Dm",
+  "D#m",
+  "Em",
+  "Fm",
+  "F#m",
+  "Gm",
+  "G#m",
+];
 
-export function TheoryTab({
-  unlockedChords,
-  masteredChords,
-  onChordMastered,
-  onChordUnlocked,
-}: TheoryTabProps) {
+export function TheoryTab({ masteredChords, onChordMastered }: TheoryTabProps) {
   const [selectedChord, setSelectedChord] = useState("C");
-  const [showCircleOfFifths, setShowCircleOfFifths] = useState(false);
+  // const [showCircleOfFifths, setShowCircleOfFifths] = useState(false);
 
   const currentChord = CHORD_DATA[selectedChord];
-  const isUnlocked = unlockedChords.includes(selectedChord);
   const isMastered = masteredChords.includes(selectedChord);
 
-  const handleChordSelect = useCallback(
-    (chord: string) => {
-      if (unlockedChords.includes(chord)) {
-        setSelectedChord(chord);
-      }
-    },
-    [unlockedChords],
-  );
+  const handleChordSelect = useCallback((chord: string) => {
+    setSelectedChord(chord);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -47,64 +61,49 @@ export function TheoryTab({
           <h3 className="font-semibold text-foreground">
             Select a Chord to Study
           </h3>
-          <button
-            onClick={() => setShowCircleOfFifths(!showCircleOfFifths)}
-            className="text-sm text-primary hover:underline flex items-center gap-1"
-          >
-            <Sparkles className="w-4 h-4" />
-            {showCircleOfFifths ? "Hide" : "Show"} Circle of Fifths
-          </button>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
-          {ALL_CHORDS.map((chord) => {
-            const unlocked = unlockedChords.includes(chord);
-            const mastered = masteredChords.includes(chord);
-            const isSelected = selectedChord === chord;
+        <div className="grid grid-cols-2 gap-6">
+          {/* Chord selector */}
+          <div className="grid grid-rows-2 gap-2">
+            <div className="flex flex-wrap gap-2">
+              {MAJOR_CHORDS.map((chord) => {
+                return (
+                  <ChordButton
+                    key={chord}
+                    chord={chord}
+                    handleChordSelect={handleChordSelect}
+                    masteredChords={masteredChords}
+                    selectedChord={selectedChord}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {MINOR_CHORDS.map((chord) => {
+                return (
+                  <ChordButton
+                    key={chord}
+                    chord={chord}
+                    handleChordSelect={handleChordSelect}
+                    masteredChords={masteredChords}
+                    selectedChord={selectedChord}
+                  />
+                );
+              })}
+            </div>
+          </div>
 
-            return (
-              <button
-                key={chord}
-                onClick={() => handleChordSelect(chord)}
-                disabled={!unlocked}
-                className={`
-                  relative p-3 rounded-lg font-medium text-sm transition-all
-                  ${
-                    !unlocked
-                      ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                      : isSelected
-                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                        : "bg-secondary text-foreground hover:bg-muted"
-                  }
-                `}
-              >
-                {!unlocked && (
-                  <Lock className="w-3 h-3 absolute top-1 right-1" />
-                )}
-                {mastered && (
-                  <CheckCircle2 className="w-3 h-3 absolute top-1 right-1 text-green-500" />
-                )}
-                <span className="block text-lg">{chord}</span>
-                <span className="block text-xs opacity-70">
-                  {CHORD_DATA[chord]?.type || "chord"}
-                </span>
-              </button>
-            );
-          })}
+          {/* Circle of Fifths */}
+          <CircleOfFifths
+            selectedChord={selectedChord}
+            onChordSelect={handleChordSelect}
+          />
         </div>
       </div>
 
-      {/* Circle of Fifths (collapsible) */}
-      {showCircleOfFifths && (
-        <CircleOfFifths
-          selectedChord={selectedChord}
-          onChordSelect={handleChordSelect}
-          unlockedChords={unlockedChords}
-        />
-      )}
-
       {/* Main content */}
-      {isUnlocked && currentChord && (
+      {currentChord && (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           {/* Left: Theory info */}
           <div className="xl:col-span-1 space-y-4">
@@ -161,5 +160,43 @@ export function TheoryTab({
         </div>
       </div>
     </div>
+  );
+}
+
+function ChordButton({
+  chord,
+  handleChordSelect,
+  masteredChords,
+  selectedChord,
+}: {
+  chord: string;
+  handleChordSelect: (chord: string) => void;
+  masteredChords: string[];
+  selectedChord: string;
+}) {
+  const mastered = masteredChords.includes(chord);
+  const isSelected = selectedChord === chord;
+
+  return (
+    <button
+      key={chord}
+      onClick={() => handleChordSelect(chord)}
+      className={`
+        relative p-3 rounded-lg font-medium text-sm transition-all
+        ${
+          isSelected
+            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+            : "bg-secondary text-foreground hover:bg-muted"
+        }
+      `}
+    >
+      {mastered && (
+        <CheckCircle2 className="w-3 h-3 absolute top-1 right-1 text-green-500" />
+      )}
+      <span className="block text-lg">{chord}</span>
+      <span className="block text-xs opacity-70">
+        {CHORD_DATA[chord]?.type || "chord"}
+      </span>
+    </button>
   );
 }

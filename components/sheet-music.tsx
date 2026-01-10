@@ -47,10 +47,7 @@ export function SheetMusic({
           {/* Staff lines */}
           <div className="absolute inset-0 flex flex-col justify-center pl-12 pr-4">
             {Array.from({ length: STAFF_LINES }).map((_, i) => (
-              <div
-                key={i}
-                className="h-[1px] bg-muted-foreground/40 my-[6px]"
-              />
+              <div key={i} className="h-px bg-muted-foreground/40 my-1.5" />
             ))}
           </div>
 
@@ -74,7 +71,7 @@ export function SheetMusic({
                       </span>
                     )}
                     <div className="w-4 h-3 bg-primary rounded-full rotate-[-20deg] shadow-sm" />
-                    <div className="w-[2px] h-8 bg-primary -mt-1 ml-3" />
+                    <div className="w-0.5 h-8 bg-primary -mt-1 ml-3" />
                   </div>
                 );
               })}
@@ -93,7 +90,7 @@ export function SheetMusic({
               <div
                 key={i}
                 className={`
-                  flex-shrink-0 px-3 py-2 rounded-lg border transition-all
+                  shrink-0 px-3 py-2 rounded-lg border transition-all
                   ${
                     i === currentIndex
                       ? "bg-primary border-primary text-primary-foreground"

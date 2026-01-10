@@ -99,7 +99,7 @@ export function PianoKeyboard({
       </div>
 
       <div className="p-4 overflow-x-auto">
-        <div className="flex justify-center min-w-[600px]">
+        <div className="flex justify-center min-w-150">
           {OCTAVES.map((octave) => (
             <div key={octave} className="relative flex">
               {WHITE_KEYS.map((note, index) => {

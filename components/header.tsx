@@ -5,7 +5,7 @@ import { TabsList, TabsTrigger } from "./ui/tabs";
 export function Header() {
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-[1800px] mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
+      <div className="max-w-450 mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
             <Music className="w-5 h-5 text-primary-foreground" />

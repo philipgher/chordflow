@@ -11,12 +11,12 @@ import { BookOpen, Music, Drum } from "lucide-react";
 export function PianoLearningApp() {
   const [activeTab, setActiveTab] = useState("theory");
 
-  const [unlockedChords, setUnlockedChords] = useState<string[]>([
-    "C",
-    "G",
-    "Am",
-    "F",
-  ]);
+  // const [unlockedChords, setUnlockedChords] = useState<string[]>([
+  //   "C",
+  //   "G",
+  //   "Am",
+  //   "F",
+  // ]);
   const [masteredChords, setMasteredChords] = useState<string[]>([]);
   const [unlockedProgressions, setUnlockedProgressions] = useState<string[]>([
     "I-V-vi-IV",
@@ -40,14 +40,14 @@ export function PianoLearningApp() {
     [unlockedProgressions],
   );
 
-  const handleChordUnlocked = useCallback(
-    (chord: string) => {
-      if (!unlockedChords.includes(chord)) {
-        setUnlockedChords((prev) => [...prev, chord]);
-      }
-    },
-    [unlockedChords],
-  );
+  // const handleChordUnlocked = useCallback(
+  //   (chord: string) => {
+  //     if (!unlockedChords.includes(chord)) {
+  //       setUnlockedChords((prev) => [...prev, chord]);
+  //     }
+  //   },
+  //   [unlockedChords],
+  // );
 
   return (
     <Tabs
@@ -95,16 +95,13 @@ export function PianoLearningApp() {
 
           <TabsContent value="theory" className="mt-0">
             <TheoryTab
-              unlockedChords={unlockedChords}
               masteredChords={masteredChords}
               onChordMastered={handleChordMastered}
-              onChordUnlocked={handleChordUnlocked}
             />
           </TabsContent>
 
           <TabsContent value="progressions" className="mt-0">
             <ProgressionsTab
-              unlockedChords={unlockedChords}
               unlockedProgressions={unlockedProgressions}
               onProgressionUnlocked={handleProgressionUnlocked}
             />
