@@ -116,11 +116,18 @@ export function PianoWithRhythm({
   const totalWhiteKeys = WHITE_KEYS.length;
   const keyboardWidth = totalWhiteKeys * WHITE_KEY_WIDTH;
 
+  const currentChordNotes = getChordNotes(chordName);
+
   const isHighlighted = useCallback(
     (note: string) => {
+      if (!isPlaying) {
+        return currentChordNotes.some(
+          (currentChordNote) => currentChordNote === note,
+        );
+      }
       return notesInHitZone.some((noteInHitZone) => noteInHitZone === note);
     },
-    [notesInHitZone],
+    [notesInHitZone, isPlaying, currentChordNotes],
   );
 
   const isActive = useCallback(
@@ -326,32 +333,62 @@ export function PianoWithRhythm({
                 />
               ))}
 
-              {/* Falling notes */}
-              {notes.map((note) => {
-                const pos = getNotePosition(note.note);
-                if (!pos) return null;
+              {!isPlaying &&
+                currentChordNotes.map((note, idx) => {
+                  const pos = getNotePosition(note);
+                  if (!pos) return null;
 
-                return (
-                  <div
-                    key={note.id}
-                    className={`absolute rounded-md flex items-center justify-center font-bold text-xs transition-all ${
-                      note.hit
-                        ? "scale-125 opacity-0"
-                        : pos.isBlack
+                  return (
+                    <div
+                      key={`static-${note}`}
+                      className={`absolute rounded-md flex items-center justify-center font-bold text-xs animate-bounce ${
+                        pos.isBlack
                           ? "bg-chart-2 shadow-lg shadow-chart-2/50"
                           : "bg-primary shadow-lg shadow-primary/50"
-                    }`}
-                    style={{
-                      left: pos.x + (pos.width - (pos.isBlack ? 28 : 40)) / 2,
-                      width: pos.isBlack ? 28 : 40,
-                      height: 40,
-                      top: note.y,
-                    }}
-                  >
-                    <span className="text-primary-foreground">{note.note}</span>
-                  </div>
-                );
-              })}
+                      }`}
+                      style={{
+                        left: pos.x + (pos.width - (pos.isBlack ? 28 : 40)) / 2,
+                        width: pos.isBlack ? 28 : 40,
+                        height: 40,
+                        bottom: 50,
+                        animationDelay: `${idx * 100}ms`,
+                        animationDuration: "1.5s",
+                      }}
+                    >
+                      <span className="text-primary-foreground">{note}</span>
+                    </div>
+                  );
+                })}
+
+              {/* Falling notes - only shown when playing */}
+              {isPlaying &&
+                notes.map((note) => {
+                  const pos = getNotePosition(note.note);
+                  if (!pos) return null;
+
+                  return (
+                    <div
+                      key={note.id}
+                      className={`absolute rounded-md flex items-center justify-center font-bold text-xs transition-all ${
+                        note.hit
+                          ? "scale-125 opacity-0"
+                          : pos.isBlack
+                            ? "bg-chart-2 shadow-lg shadow-chart-2/50"
+                            : "bg-primary shadow-lg shadow-primary/50"
+                      }`}
+                      style={{
+                        left: pos.x + (pos.width - (pos.isBlack ? 28 : 40)) / 2,
+                        width: pos.isBlack ? 28 : 40,
+                        height: 40,
+                        top: note.y,
+                      }}
+                    >
+                      <span className="text-primary-foreground">
+                        {note.note}
+                      </span>
+                    </div>
+                  );
+                })}
 
               {/* Current chord label */}
               <div className="absolute top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-card rounded-full border border-border shadow-lg">
@@ -359,6 +396,14 @@ export function PianoWithRhythm({
                   {progression.chords[currentChordIndex]}
                 </span>
               </div>
+
+              {!isPlaying && (
+                <div className="absolute top-12 left-1/2 -translate-x-1/2 px-3 py-1 bg-secondary/50 rounded-full">
+                  <span className="text-xs text-muted-foreground">
+                    Press Play to start rhythm practice
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Piano Keyboard */}
