@@ -50,39 +50,15 @@ export function PianoLearningApp() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <Tabs
+      className="min-h-screen bg-background flex flex-col"
+      value={activeTab}
+      onValueChange={setActiveTab}
+    >
       <Header />
 
-      <main className="flex-1 p-4 lg:p-6 max-w-[1600px] mx-auto w-full">
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 h-14 bg-card border border-border">
-            <TabsTrigger
-              value="theory"
-              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Theory</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="progressions"
-              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Music className="w-4 h-4" />
-              <span className="hidden sm:inline">Progressions</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="rhythm"
-              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Drum className="w-4 h-4" />
-              <span className="hidden sm:inline">Rhythm</span>
-            </TabsTrigger>
-          </TabsList>
-
+      <main className="flex-1 p-4 lg:p-6 max-w-400 mx-auto w-full">
+        <div className="space-y-6">
           <div className="text-center space-y-1">
             {activeTab === "theory" && (
               <>
@@ -140,8 +116,8 @@ export function PianoLearningApp() {
               masteredChords={masteredChords}
             />
           </TabsContent>
-        </Tabs>
+        </div>
       </main>
-    </div>
+    </Tabs>
   );
 }

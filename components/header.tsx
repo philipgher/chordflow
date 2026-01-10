@@ -1,5 +1,6 @@
-import { Music, Settings, BookOpen } from "lucide-react";
+import { Music, Settings, BookOpen, Drum } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TabsList, TabsTrigger } from "./ui/tabs";
 
 export function Header() {
   return (
@@ -18,18 +19,29 @@ export function Header() {
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          <button className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-            Chords
-          </button>
-          <button className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Progressions
-          </button>
-          <button className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Rhythm
-          </button>
-          <button className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Theory
-          </button>
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 h-14 gap-4 bg-card">
+            <TabsTrigger
+              value="theory"
+              className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Theory</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="progressions"
+              className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none"
+            >
+              <Music className="w-4 h-4" />
+              <span className="hidden sm:inline">Progressions</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="rhythm"
+              className="flex items-center gap-2 data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none"
+            >
+              <Drum className="w-4 h-4" />
+              <span className="hidden sm:inline">Rhythm</span>
+            </TabsTrigger>
+          </TabsList>
         </nav>
 
         <div className="flex items-center gap-2">
