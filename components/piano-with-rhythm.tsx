@@ -120,8 +120,7 @@ export function PianoWithRhythm({
 
   const isHighlighted = useCallback(
     (note: string) => {
-      const baseNote = note.replace(/[0-9]/g, "");
-      return highlightedNotes.some((n) => n.replace(/[0-9]/g, "") === baseNote);
+      return highlightedNotes.includes(note);
     },
     [highlightedNotes],
   );
@@ -137,14 +136,18 @@ export function PianoWithRhythm({
     (note: string) => {
       setPressedKeys((prev) => new Set(prev).add(note));
       onNotePlay(note);
+    },
+    [onNotePlay],
+  );
 
-      setTimeout(() => {
-        setPressedKeys((prev) => {
-          const next = new Set(prev);
-          next.delete(note);
-          return next;
-        });
-      }, 200);
+  const handleKeyRelease = useCallback(
+    (note: string) => {
+      setPressedKeys((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(note);
+        return newSet;
+      });
+      onNotePlay(note);
     },
     [onNotePlay],
   );
@@ -174,9 +177,17 @@ export function PianoWithRhythm({
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const note = keyMap[e.key.toLowerCase()];
+      if (note && !pressedKeys.has(note)) {
+        handleKeyRelease(note);
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyPress, pressedKeys]);
+  }, [handleKeyPress, handleKeyRelease, pressedKeys]);
 
   // Spawn and animate falling notes
   const spawnNotes = useCallback((chordIndex: number, chordName: string) => {
@@ -284,10 +295,10 @@ export function PianoWithRhythm({
         <div className="flex justify-center">
           <div style={{ width: keyboardWidth }} className="relative">
             {/* Rhythm Lane - falling notes area */}
-            <div className="relative h-[280px] bg-secondary/20 rounded-t-lg border-x border-t border-border/50 overflow-hidden">
+            <div className="relative h-70 bg-secondary/20 rounded-t-lg border-x border-t border-border/50 overflow-hidden">
               {/* Hit zone indicator */}
-              <div className="absolute bottom-0 left-0 right-0 h-[40px] bg-primary/10 border-t-2 border-primary/50" />
-              <div className="absolute bottom-[20px] left-0 right-0 h-[2px] bg-primary shadow-[0_0_10px_var(--primary)]" />
+              <div className="absolute bottom-0 left-0 right-0 h-10 bg-primary/10 border-t-2 border-primary/50" />
+              <div className="absolute bottom-5 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_var(--primary)]" />
 
               {/* Lane guides - one per white key */}
               {WHITE_KEYS.map((_, index) => (

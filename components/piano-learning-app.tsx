@@ -39,7 +39,7 @@ export function PianoLearningApp() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 max-w-[1600px] mx-auto w-full">
+      <main className="flex-1 p-4 lg:p-6 space-y-4 lg:space-y-6 max-w-400 mx-auto w-full">
         {/* Progression Selector */}
         <ProgressionSelector
           selectedProgression={selectedProgression}
@@ -75,16 +75,15 @@ export function PianoLearningApp() {
               onChordChange={handleChordChange}
               onNotePlay={handleNotePlay}
             />
+            {/* Control Panel */}
+            <ControlPanel
+              isPlaying={isPlaying}
+              tempo={tempo}
+              onTogglePlay={togglePlay}
+              onTempoChange={setTempo}
+            />
           </div>
         </div>
-
-        {/* Control Panel */}
-        <ControlPanel
-          isPlaying={isPlaying}
-          tempo={tempo}
-          onTogglePlay={togglePlay}
-          onTempoChange={setTempo}
-        />
       </main>
     </div>
   );
