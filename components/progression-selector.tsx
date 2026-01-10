@@ -1,15 +1,20 @@
-"use client"
+"use client";
 
-import { PROGRESSIONS } from "@/lib/music-data"
-import { ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { PROGRESSIONS } from "@/lib/music-data";
+import { ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProgressionSelectorProps {
-  selectedProgression: string
-  onSelectProgression: (key: string) => void
-  currentChordIndex: number
-  onChordSelect: (index: number) => void
+  selectedProgression: string;
+  onSelectProgression: (key: string) => void;
+  currentChordIndex: number;
+  onChordSelect: (index: number) => void;
 }
 
 export function ProgressionSelector({
@@ -18,7 +23,7 @@ export function ProgressionSelector({
   currentChordIndex,
   onChordSelect,
 }: ProgressionSelectorProps) {
-  const progression = PROGRESSIONS[selectedProgression]
+  const progression = PROGRESSIONS[selectedProgression];
 
   return (
     <div className="bg-card rounded-xl border border-border p-4">
@@ -39,15 +44,21 @@ export function ProgressionSelector({
                   className="flex flex-col items-start"
                 >
                   <span className="font-medium">{key}</span>
-                  <span className="text-xs text-muted-foreground">{prog.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {prog.name}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-foreground">{progression.name}</p>
-            <p className="text-xs text-muted-foreground">{progression.description}</p>
+            <p className="text-sm font-medium text-foreground">
+              {progression.name}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {progression.description}
+            </p>
           </div>
         </div>
 
@@ -71,5 +82,5 @@ export function ProgressionSelector({
         </div>
       </div>
     </div>
-  )
+  );
 }

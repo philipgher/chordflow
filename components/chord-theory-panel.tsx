@@ -1,9 +1,9 @@
-import type { ChordData } from "@/lib/music-data"
-import { Info, Music2 } from "lucide-react"
+import type { ChordData } from "@/lib/music-data";
+import { Info, Music2 } from "lucide-react";
 
 interface ChordTheoryPanelProps {
-  chord: ChordData
-  chordName: string
+  chord: ChordData;
+  chordName: string;
 }
 
 export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
@@ -23,7 +23,9 @@ export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
           </div>
           <div
             className={`px-3 py-1 rounded-full text-xs font-medium ${
-              chord.type === "major" ? "bg-primary/20 text-primary" : "bg-accent/20 text-accent"
+              chord.type === "major"
+                ? "bg-primary/20 text-primary"
+                : "bg-accent/20 text-accent"
             }`}
           >
             {chord.type}
@@ -38,9 +40,16 @@ export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
           </h4>
           <div className="flex gap-2">
             {chord.intervals.map((interval, i) => (
-              <div key={i} className="flex-1 bg-secondary rounded-lg p-2 text-center">
-                <span className="text-xs text-muted-foreground block">{interval.name}</span>
-                <span className="text-sm font-medium text-foreground">{interval.semitones} st</span>
+              <div
+                key={i}
+                className="flex-1 bg-secondary rounded-lg p-2 text-center"
+              >
+                <span className="text-xs text-muted-foreground block">
+                  {interval.name}
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {interval.semitones} st
+                </span>
               </div>
             ))}
           </div>
@@ -51,8 +60,13 @@ export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
           <h4 className="text-sm font-medium text-foreground">Notes</h4>
           <div className="flex gap-2">
             {chord.notes.map((note, i) => (
-              <div key={i} className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-sm font-bold text-primary-foreground">{note}</span>
+              <div
+                key={i}
+                className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center"
+              >
+                <span className="text-sm font-bold text-primary-foreground">
+                  {note}
+                </span>
               </div>
             ))}
           </div>
@@ -60,7 +74,9 @@ export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
 
         {/* Finger positions */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-foreground">Suggested Fingering</h4>
+          <h4 className="text-sm font-medium text-foreground">
+            Suggested Fingering
+          </h4>
           <div className="flex gap-4 text-sm">
             {chord.fingering.map((finger, i) => (
               <div key={i} className="flex items-center gap-1">
@@ -76,10 +92,11 @@ export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
         {/* Tip */}
         <div className="bg-secondary/50 rounded-lg p-3 border border-border">
           <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Tip:</span> {chord.tip}
+            <span className="font-medium text-foreground">Tip:</span>{" "}
+            {chord.tip}
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -8,10 +8,8 @@ interface PianoWithRhythmProps {
   currentChordIndex: number;
   isPlaying: boolean;
   tempo: number;
-  highlightedNotes: string[];
   chordName: string;
   onChordChange: (index: number) => void;
-  onNotePlay: (note: string) => void;
 }
 
 interface FallingNote {
@@ -56,13 +54,12 @@ const BLACK_KEY_WIDTH = 32;
 function getNotePosition(
   note: string,
 ): { x: number; width: number; isBlack: boolean } | null {
-  const baseNote = note.replace(/[0-9]/g, "");
-
   // Find white key index for positioning
   let whiteKeyIndex = 0;
   for (let i = 0; i < KEYBOARD_KEYS.length; i++) {
     const key = KEYBOARD_KEYS[i];
-    if (key.note === baseNote) {
+    const fullNote = `${key.note}${key.octave}`;
+    if (fullNote === note) {
       if (key.isBlack) {
         // Black key position: between the previous and next white keys
         return {
@@ -105,10 +102,8 @@ export function PianoWithRhythm({
   currentChordIndex,
   isPlaying,
   tempo,
-  highlightedNotes,
   chordName,
   onChordChange,
-  onNotePlay,
 }: PianoWithRhythmProps) {
   const [notes, setNotes] = useState<FallingNote[]>([]);
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
@@ -135,13 +130,9 @@ export function PianoWithRhythm({
     [pressedKeys],
   );
 
-  const handleKeyPress = useCallback(
-    (note: string) => {
-      setPressedKeys((prev) => new Set(prev).add(note));
-      onNotePlay(note);
-    },
-    [onNotePlay],
-  );
+  const handleKeyPress = useCallback((note: string) => {
+    setPressedKeys((prev) => new Set(prev).add(note));
+  }, []);
 
   const handleKeyRelease = useCallback((note: string) => {
     setPressedKeys((prev) => {
@@ -280,29 +271,25 @@ export function PianoWithRhythm({
   ]);
 
   // Handle clicking on a falling note lane (hit detection)
-  const checkNoteHit = useCallback(
-    (noteToCheck: string) => {
-      const hitZoneTop = 240;
-      const hitZoneBottom = 300;
+  const checkNoteHit = useCallback((noteToCheck: string) => {
+    const hitZoneTop = 240;
+    const hitZoneBottom = 300;
 
-      setNotes((prev) => {
-        const updated = [...prev];
-        const noteIndex = updated.findIndex(
-          (n) =>
-            n.note === noteToCheck &&
-            !n.hit &&
-            n.y >= hitZoneTop &&
-            n.y <= hitZoneBottom,
-        );
-        if (noteIndex !== -1) {
-          updated[noteIndex].hit = true;
-          onNotePlay(updated[noteIndex].note);
-        }
-        return updated;
-      });
-    },
-    [onNotePlay],
-  );
+    setNotes((prev) => {
+      const updated = [...prev];
+      const noteIndex = updated.findIndex(
+        (n) =>
+          n.note === noteToCheck &&
+          !n.hit &&
+          n.y >= hitZoneTop &&
+          n.y <= hitZoneBottom,
+      );
+      if (noteIndex !== -1) {
+        updated[noteIndex].hit = true;
+      }
+      return updated;
+    });
+  }, []);
 
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -423,7 +410,7 @@ export function PianoWithRhythm({
                 const fullNote = `${key.note}${key.octave}`;
                 const highlighted = isHighlighted(fullNote);
                 const active = isActive(fullNote);
-                const pos = getNotePosition(key.note);
+                const pos = getNotePosition(fullNote);
                 if (!pos) return null;
 
                 return (

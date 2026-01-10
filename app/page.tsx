@@ -1,5 +1,5 @@
-import { PianoLearningApp } from "@/components/piano-learning-app"
+import { PianoLearningApp } from "@/components/piano-learning-app";
 
 export default function Home() {
-  return <PianoLearningApp />
+  return <PianoLearningApp />;
 }

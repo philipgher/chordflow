@@ -1,51 +1,56 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react";
 
 interface PianoKeyboardProps {
-  activeNotes: string[]
-  highlightedNotes: string[]
-  onNotePlay: (note: string) => void
-  chordName: string
+  activeNotes: string[];
+  highlightedNotes: string[];
+  onNotePlay: (note: string) => void;
+  chordName: string;
 }
 
-const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"]
-const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null]
-const OCTAVES = [3, 4, 5]
+const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"];
+const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null];
+const OCTAVES = [3, 4, 5];
 
-export function PianoKeyboard({ activeNotes, highlightedNotes, onNotePlay, chordName }: PianoKeyboardProps) {
-  const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set())
+export function PianoKeyboard({
+  activeNotes,
+  highlightedNotes,
+  onNotePlay,
+  chordName,
+}: PianoKeyboardProps) {
+  const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
 
   const isHighlighted = useCallback(
     (note: string) => {
-      const baseNote = note.replace(/[0-9]/g, "")
-      return highlightedNotes.some((n) => n.replace(/[0-9]/g, "") === baseNote)
+      const baseNote = note.replace(/[0-9]/g, "");
+      return highlightedNotes.some((n) => n.replace(/[0-9]/g, "") === baseNote);
     },
     [highlightedNotes],
-  )
+  );
 
   const isActive = useCallback(
     (note: string) => {
-      return activeNotes.includes(note) || pressedKeys.has(note)
+      return activeNotes.includes(note) || pressedKeys.has(note);
     },
     [activeNotes, pressedKeys],
-  )
+  );
 
   const handleKeyPress = useCallback(
     (note: string) => {
-      setPressedKeys((prev) => new Set(prev).add(note))
-      onNotePlay(note)
+      setPressedKeys((prev) => new Set(prev).add(note));
+      onNotePlay(note);
 
       setTimeout(() => {
         setPressedKeys((prev) => {
-          const next = new Set(prev)
-          next.delete(note)
-          return next
-        })
-      }, 200)
+          const next = new Set(prev);
+          next.delete(note);
+          return next;
+        });
+      }, 200);
     },
     [onNotePlay],
-  )
+  );
 
   // Keyboard shortcuts for playing
   useEffect(() => {
@@ -63,18 +68,18 @@ export function PianoKeyboard({ activeNotes, highlightedNotes, onNotePlay, chord
       u: "A#4",
       j: "B4",
       k: "C5",
-    }
+    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      const note = keyMap[e.key.toLowerCase()]
+      const note = keyMap[e.key.toLowerCase()];
       if (note && !pressedKeys.has(note)) {
-        handleKeyPress(note)
+        handleKeyPress(note);
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [handleKeyPress, pressedKeys])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyPress, pressedKeys]);
 
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -83,10 +88,14 @@ export function PianoKeyboard({ activeNotes, highlightedNotes, onNotePlay, chord
           <h2 className="font-semibold text-foreground">Piano Keyboard</h2>
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-primary" />
-            <span className="text-xs text-muted-foreground">Chord notes for {chordName}</span>
+            <span className="text-xs text-muted-foreground">
+              Chord notes for {chordName}
+            </span>
           </div>
         </div>
-        <span className="text-xs text-muted-foreground hidden sm:block">Press A-K keys to play</span>
+        <span className="text-xs text-muted-foreground hidden sm:block">
+          Press A-K keys to play
+        </span>
       </div>
 
       <div className="p-4 overflow-x-auto">
@@ -94,9 +103,9 @@ export function PianoKeyboard({ activeNotes, highlightedNotes, onNotePlay, chord
           {OCTAVES.map((octave) => (
             <div key={octave} className="relative flex">
               {WHITE_KEYS.map((note, index) => {
-                const fullNote = `${note}${octave}`
-                const highlighted = isHighlighted(fullNote)
-                const active = isActive(fullNote)
+                const fullNote = `${note}${octave}`;
+                const highlighted = isHighlighted(fullNote);
+                const active = isActive(fullNote);
 
                 return (
                   <button
@@ -123,20 +132,24 @@ export function PianoKeyboard({ activeNotes, highlightedNotes, onNotePlay, chord
                     >
                       {note}
                     </span>
-                    {highlighted && <span className="absolute top-2 w-2 h-2 rounded-full bg-primary-foreground" />}
+                    {highlighted && (
+                      <span className="absolute top-2 w-2 h-2 rounded-full bg-primary-foreground" />
+                    )}
                   </button>
-                )
+                );
               })}
 
               {/* Black keys */}
               <div className="absolute top-0 left-0 flex">
                 {BLACK_KEYS.map((note, index) => {
-                  if (!note) return <div key={index} className="w-10 sm:w-12" />
+                  if (!note)
+                    return <div key={index} className="w-10 sm:w-12" />;
 
-                  const fullNote = `${note}${octave}`
-                  const highlighted = isHighlighted(fullNote)
-                  const active = isActive(fullNote)
-                  const offset = index < 2 ? (index + 1) * 40 - 14 : (index + 1) * 40 - 14
+                  const fullNote = `${note}${octave}`;
+                  const highlighted = isHighlighted(fullNote);
+                  const active = isActive(fullNote);
+                  const offset =
+                    index < 2 ? (index + 1) * 40 - 14 : (index + 1) * 40 - 14;
 
                   return (
                     <button
@@ -168,7 +181,7 @@ export function PianoKeyboard({ activeNotes, highlightedNotes, onNotePlay, chord
                         <span className="absolute top-2 w-1.5 h-1.5 rounded-full bg-primary-foreground" />
                       )}
                     </button>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -176,5 +189,5 @@ export function PianoKeyboard({ activeNotes, highlightedNotes, onNotePlay, chord
         </div>
       </div>
     </div>
-  )
+  );
 }

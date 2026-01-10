@@ -1,5 +1,5 @@
-import { Music, Settings, BookOpen } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Music, Settings, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   return (
@@ -11,12 +11,16 @@ export function Header() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-foreground">ChordFlow</h1>
-            <p className="text-xs text-muted-foreground">Visual Piano Learning</p>
+            <p className="text-xs text-muted-foreground">
+              Visual Piano Learning
+            </p>
           </div>
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          <button className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">Chords</button>
+          <button className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+            Chords
+          </button>
           <button className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Progressions
           </button>
@@ -38,5 +42,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

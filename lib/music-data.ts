@@ -1,17 +1,17 @@
 export interface ChordData {
-  notes: string[]
-  fullName: string
-  type: "major" | "minor" | "diminished" | "augmented" | "7th"
-  intervals: { name: string; semitones: number }[]
-  fingering: number[]
-  tip: string
+  notes: string[];
+  fullName: string;
+  type: "major" | "minor" | "diminished" | "augmented" | "7th";
+  intervals: { name: string; semitones: number }[];
+  fingering: number[];
+  tip: string;
 }
 
 export interface Progression {
-  name: string
-  description: string
-  chords: string[]
-  key: string
+  name: string;
+  description: string;
+  chords: string[];
+  key: string;
 }
 
 export const CHORD_DATA: Record<string, ChordData> = {
@@ -111,7 +111,7 @@ export const CHORD_DATA: Record<string, ChordData> = {
     fingering: [1, 3, 5],
     tip: "Another bright major chord. The dominant of D major.",
   },
-}
+};
 
 export const PROGRESSIONS: Record<string, Progression> = {
   "I-V-vi-IV": {
@@ -150,4 +150,4 @@ export const PROGRESSIONS: Record<string, Progression> = {
     chords: ["C", "G", "Am", "Em"],
     key: "C Major",
   },
-}
+};
