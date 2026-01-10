@@ -3,8 +3,8 @@ import type { ChordData, Progression } from "@/lib/music-data";
 interface SheetMusicProps {
   chord: ChordData;
   chordName: string;
-  progression: Progression;
-  currentIndex: number;
+  progression?: Progression;
+  currentIndex?: number;
 }
 
 const STAFF_LINES = 5;
@@ -87,24 +87,25 @@ export function SheetMusic({
           </div>
         </div>
 
-        {/* Progression display */}
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-          {progression.chords.map((c, i) => (
-            <div
-              key={i}
-              className={`
-                flex-shrink-0 px-3 py-2 rounded-lg border transition-all
-                ${
-                  i === currentIndex
-                    ? "bg-primary border-primary text-primary-foreground"
-                    : "bg-secondary border-border text-muted-foreground hover:text-foreground"
-                }
-              `}
-            >
-              <span className="text-sm font-medium">{c}</span>
-            </div>
-          ))}
-        </div>
+        {progression && (
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+            {progression.chords.map((c, i) => (
+              <div
+                key={i}
+                className={`
+                  flex-shrink-0 px-3 py-2 rounded-lg border transition-all
+                  ${
+                    i === currentIndex
+                      ? "bg-primary border-primary text-primary-foreground"
+                      : "bg-secondary border-border text-muted-foreground hover:text-foreground"
+                  }
+                `}
+              >
+                <span className="text-sm font-medium">{c}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
