@@ -112,17 +112,20 @@ export function PianoWithRhythm({
 }: PianoWithRhythmProps) {
   const [notes, setNotes] = useState<FallingNote[]>([]);
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
+  const [notesInHitZone, setNotesInHitZone] = useState<string[]>([]);
   const animationRef = useRef<number | undefined>(undefined);
   const noteIdRef = useRef(0);
+
+  const upcomingChordRef = useRef(0);
 
   const totalWhiteKeys = WHITE_KEYS.length;
   const keyboardWidth = totalWhiteKeys * WHITE_KEY_WIDTH;
 
   const isHighlighted = useCallback(
     (note: string) => {
-      return highlightedNotes.includes(note);
+      return notesInHitZone.some((noteInHitZone) => noteInHitZone === note);
     },
-    [highlightedNotes],
+    [notesInHitZone],
   );
 
   const isActive = useCallback(
@@ -140,17 +143,13 @@ export function PianoWithRhythm({
     [onNotePlay],
   );
 
-  const handleKeyRelease = useCallback(
-    (note: string) => {
-      setPressedKeys((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(note);
-        return newSet;
-      });
-      onNotePlay(note);
-    },
-    [onNotePlay],
-  );
+  const handleKeyRelease = useCallback((note: string) => {
+    setPressedKeys((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(note);
+      return newSet;
+    });
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -205,32 +204,63 @@ export function PianoWithRhythm({
   useEffect(() => {
     if (!isPlaying) {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      setNotes([]);
+      setNotesInHitZone([]);
       return;
     }
 
     const beatInterval = (60 / tempo) * 1000;
+    const fallDistance = 310; // from y=-50 to hit zone at y=260
+    const speed = 0.12 * (tempo / 80);
+    const fallTime = fallDistance / speed; // milliseconds to fall
+
     let lastTime = performance.now();
-    let timeSinceLastBeat = 0;
-    let currentBeatChord = currentChordIndex;
+    let timeSinceLastSpawn = beatInterval - fallTime; // Start offset so first note arrives on first beat
+
+    upcomingChordRef.current = currentChordIndex;
+    const firstChord = progression.chords[upcomingChordRef.current];
+    spawnNotes(upcomingChordRef.current, firstChord);
+    upcomingChordRef.current =
+      (upcomingChordRef.current + 1) % progression.chords.length;
 
     const animate = (time: number) => {
       const delta = time - lastTime;
       lastTime = time;
-      timeSinceLastBeat += delta;
+      timeSinceLastSpawn += delta;
 
-      if (timeSinceLastBeat >= beatInterval) {
-        timeSinceLastBeat = 0;
-        const chordName = progression.chords[currentBeatChord];
-        spawnNotes(currentBeatChord, chordName);
-        currentBeatChord = (currentBeatChord + 1) % progression.chords.length;
-        onChordChange(currentBeatChord);
+      if (timeSinceLastSpawn >= beatInterval) {
+        timeSinceLastSpawn = 0;
+        const chordName = progression.chords[upcomingChordRef.current];
+        spawnNotes(upcomingChordRef.current, chordName);
+        upcomingChordRef.current =
+          (upcomingChordRef.current + 1) % progression.chords.length;
       }
 
       setNotes((prev) => {
-        const speed = 0.12 * (tempo / 80);
-        return prev
+        const updated = prev
           .map((note) => ({ ...note, y: note.y + delta * speed }))
           .filter((note) => note.y < 350);
+
+        const hitZoneTop = 300;
+        const hitZoneBottom = 350;
+        const inZone = updated
+          .filter((n) => !n.hit && n.y >= hitZoneTop && n.y <= hitZoneBottom)
+          .map((n) => n.note);
+
+        if (inZone.length > 0) {
+          const firstNoteInZone = updated.find(
+            (n) => !n.hit && n.y >= hitZoneTop && n.y <= hitZoneBottom,
+          );
+          if (
+            firstNoteInZone &&
+            firstNoteInZone.chordIndex !== currentChordIndex
+          ) {
+            onChordChange(firstNoteInZone.chordIndex);
+          }
+        }
+
+        setNotesInHitZone(inZone);
+        return updated;
       });
 
       animationRef.current = requestAnimationFrame(animate);
