@@ -2,6 +2,14 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { Progression } from "@/lib/music-data";
+import {
+  getNotePosition,
+  KEYBOARD_WIDTH,
+  WHITE_KEY_WIDTH,
+  WHITE_KEYS,
+} from "@/lib/virtual-piano";
+import { VirtualPiano } from "./virtual-piano";
+import { areEquivalentKeys } from "@/lib/key-identity";
 
 interface PianoWithRhythmProps {
   progression: Progression;
@@ -14,87 +22,145 @@ interface PianoWithRhythmProps {
 
 interface FallingNote {
   id: string;
-  note: string;
+  note: { note: string; octave: number };
   y: number;
   hit: boolean;
   chordIndex: number;
 }
 
-const KEYBOARD_KEYS = [
-  { note: "C", octave: 4, isBlack: false },
-  { note: "C#", octave: 4, isBlack: true },
-  { note: "D", octave: 4, isBlack: false },
-  { note: "D#", octave: 4, isBlack: true },
-  { note: "E", octave: 4, isBlack: false },
-  { note: "F", octave: 4, isBlack: false },
-  { note: "F#", octave: 4, isBlack: true },
-  { note: "G", octave: 4, isBlack: false },
-  { note: "G#", octave: 4, isBlack: true },
-  { note: "A", octave: 4, isBlack: false },
-  { note: "A#", octave: 4, isBlack: true },
-  { note: "B", octave: 4, isBlack: false },
-  { note: "C", octave: 5, isBlack: false },
-  { note: "C#", octave: 5, isBlack: true },
-  { note: "D", octave: 5, isBlack: false },
-  { note: "D#", octave: 5, isBlack: true },
-  { note: "E", octave: 5, isBlack: false },
-  { note: "F", octave: 5, isBlack: false },
-  { note: "F#", octave: 5, isBlack: true },
-  { note: "G", octave: 5, isBlack: false },
-  { note: "G#", octave: 5, isBlack: true },
-  { note: "A", octave: 5, isBlack: false },
-  { note: "A#", octave: 5, isBlack: true },
-  { note: "B", octave: 5, isBlack: false },
-];
-
-const WHITE_KEYS = KEYBOARD_KEYS.filter((k) => !k.isBlack);
-const WHITE_KEY_WIDTH = 48; // pixels
-const BLACK_KEY_WIDTH = 32;
-
-function getNotePosition(
-  note: string,
-): { x: number; width: number; isBlack: boolean } | null {
-  // Find white key index for positioning
-  let whiteKeyIndex = 0;
-  for (let i = 0; i < KEYBOARD_KEYS.length; i++) {
-    const key = KEYBOARD_KEYS[i];
-    const fullNote = `${key.note}${key.octave}`;
-    if (fullNote === note) {
-      if (key.isBlack) {
-        // Black key position: between the previous and next white keys
-        return {
-          x: whiteKeyIndex * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2,
-          width: BLACK_KEY_WIDTH,
-          isBlack: true,
-        };
-      } else {
-        return {
-          x: whiteKeyIndex * WHITE_KEY_WIDTH,
-          width: WHITE_KEY_WIDTH,
-          isBlack: false,
-        };
-      }
-    }
-    if (!key.isBlack) {
-      whiteKeyIndex++;
-    }
-  }
-  return null;
-}
-
 // Chord to notes mapping with octave info
-function getChordNotes(chordName: string): string[] {
-  const noteMap: Record<string, string[]> = {
-    C: ["C4", "E4", "G4"],
-    G: ["G4", "B4", "D5"],
-    Am: ["A4", "C5", "E5"],
-    F: ["F4", "A4", "C5"],
-    Dm: ["D4", "F4", "A4"],
-    Em: ["E4", "G4", "B4"],
-    D: ["D4", "F#4", "A4"],
-    A: ["A4", "C#5", "E5"],
+function getChordNotes(chordName: string): { note: string; octave: number }[] {
+  const noteMap: Record<string, { note: string; octave: number }[]> = {
+    C: [
+      {
+        note: "C",
+        octave: 4,
+      },
+      {
+        note: "E",
+        octave: 4,
+      },
+      {
+        note: "G",
+        octave: 4,
+      },
+    ],
+    G: [
+      {
+        note: "G",
+        octave: 4,
+      },
+      {
+        note: "B",
+        octave: 4,
+      },
+      {
+        note: "D",
+        octave: 5,
+      },
+    ],
+    Am: [
+      {
+        note: "A",
+        octave: 4,
+      },
+      {
+        note: "C",
+        octave: 5,
+      },
+      {
+        note: "E",
+        octave: 5,
+      },
+    ],
+    F: [
+      {
+        note: "F",
+        octave: 4,
+      },
+      {
+        note: "A",
+        octave: 4,
+      },
+      {
+        note: "C",
+        octave: 5,
+      },
+    ],
+    Dm: [
+      {
+        note: "D",
+        octave: 4,
+      },
+      {
+        note: "F",
+        octave: 4,
+      },
+      {
+        note: "A",
+        octave: 4,
+      },
+    ],
+    Em: [
+      {
+        note: "E",
+        octave: 4,
+      },
+      {
+        note: "G",
+        octave: 4,
+      },
+      {
+        note: "B",
+        octave: 4,
+      },
+    ],
+    D: [
+      {
+        note: "D",
+        octave: 4,
+      },
+      {
+        note: "F#",
+        octave: 4,
+      },
+      {
+        note: "A",
+        octave: 4,
+      },
+    ],
+    A: [
+      {
+        note: "A",
+        octave: 4,
+      },
+      {
+        note: "C#",
+        octave: 5,
+      },
+      {
+        note: "E",
+        octave: 5,
+      },
+    ],
   };
-  return noteMap[chordName] || ["C4", "E4", "G4"];
+
+  return (
+    noteMap[chordName] || [
+      {
+        note: "C",
+        octave: 4,
+      },
+      {
+        note: "E",
+        octave: 4,
+      },
+      {
+        note: "G",
+        octave: 4,
+      },
+    ]
+  );
 }
 
 export function PianoWithRhythm({
@@ -106,85 +172,31 @@ export function PianoWithRhythm({
   onChordChange,
 }: PianoWithRhythmProps) {
   const [notes, setNotes] = useState<FallingNote[]>([]);
-  const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
-  const [notesInHitZone, setNotesInHitZone] = useState<string[]>([]);
+  const [notesInHitZone, setNotesInHitZone] = useState<
+    { note: string; octave: number }[]
+  >([]);
   const animationRef = useRef<number | undefined>(undefined);
   const noteIdRef = useRef(0);
 
   const upcomingChordRef = useRef(0);
-
-  const totalWhiteKeys = WHITE_KEYS.length;
-  const keyboardWidth = totalWhiteKeys * WHITE_KEY_WIDTH;
 
   const currentChordNotes = getChordNotes(chordName);
 
   const isHighlighted = useCallback(
     (note: string) => {
       if (!isPlaying) {
-        return currentChordNotes.some(
-          (currentChordNote) => currentChordNote === note,
-        );
+        return currentChordNotes.some((currentChordNote) => {
+          const fullCurrentChordNote = `${currentChordNote.note}${currentChordNote.octave}`;
+          return areEquivalentKeys(fullCurrentChordNote, note);
+        });
       }
-      return notesInHitZone.some((noteInHitZone) => noteInHitZone === note);
+      return notesInHitZone.some((noteInHitZone) => {
+        const fullNoteInHitZone = `${noteInHitZone.note}${noteInHitZone.octave}`;
+        return areEquivalentKeys(fullNoteInHitZone, note);
+      });
     },
     [notesInHitZone, isPlaying, currentChordNotes],
   );
-
-  const isActive = useCallback(
-    (note: string) => {
-      return pressedKeys.has(note);
-    },
-    [pressedKeys],
-  );
-
-  const handleKeyPress = useCallback((note: string) => {
-    setPressedKeys((prev) => new Set(prev).add(note));
-  }, []);
-
-  const handleKeyRelease = useCallback((note: string) => {
-    setPressedKeys((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(note);
-      return newSet;
-    });
-  }, []);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const keyMap: Record<string, string> = {
-      a: "C4",
-      w: "C#4",
-      s: "D4",
-      e: "D#4",
-      d: "E4",
-      f: "F4",
-      t: "F#4",
-      g: "G4",
-      y: "G#4",
-      h: "A4",
-      u: "A#4",
-      j: "B4",
-      k: "C5",
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const note = keyMap[e.key.toLowerCase()];
-      if (note && !pressedKeys.has(note)) {
-        handleKeyPress(note);
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const note = keyMap[e.key.toLowerCase()];
-      if (note && !pressedKeys.has(note)) {
-        handleKeyRelease(note);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyPress, handleKeyRelease, pressedKeys]);
 
   // Spawn and animate falling notes
   const spawnNotes = useCallback((chordIndex: number, chordName: string) => {
@@ -284,13 +296,15 @@ export function PianoWithRhythm({
 
     setNotes((prev) => {
       const updated = [...prev];
-      const noteIndex = updated.findIndex(
-        (n) =>
-          n.note === noteToCheck &&
+      const noteIndex = updated.findIndex((n) => {
+        const fullNote = `${n.note.note}${n.note.octave}`;
+        return (
+          fullNote === noteToCheck &&
           !n.hit &&
           n.y >= hitZoneTop &&
-          n.y <= hitZoneBottom,
-      );
+          n.y <= hitZoneBottom
+        );
+      });
       if (noteIndex !== -1) {
         updated[noteIndex].hit = true;
       }
@@ -317,7 +331,7 @@ export function PianoWithRhythm({
 
       <div className="p-4 overflow-x-auto">
         <div className="flex justify-center">
-          <div style={{ width: keyboardWidth }} className="relative">
+          <div style={{ width: KEYBOARD_WIDTH }} className="relative">
             {/* Rhythm Lane - falling notes area */}
             <div className="relative h-70 bg-secondary/20 rounded-t-lg border-x border-t border-border/50 overflow-hidden">
               {/* Hit zone indicator */}
@@ -335,7 +349,7 @@ export function PianoWithRhythm({
 
               {!isPlaying &&
                 currentChordNotes.map((note, idx) => {
-                  const pos = getNotePosition(note);
+                  const pos = getNotePosition(note.note, note.octave);
                   if (!pos) return null;
 
                   return (
@@ -355,7 +369,10 @@ export function PianoWithRhythm({
                         animationDuration: "1.5s",
                       }}
                     >
-                      <span className="text-primary-foreground">{note}</span>
+                      <span className="text-primary-foreground">
+                        {note.note}
+                        {note.octave}
+                      </span>
                     </div>
                   );
                 })}
@@ -363,7 +380,7 @@ export function PianoWithRhythm({
               {/* Falling notes - only shown when playing */}
               {isPlaying &&
                 notes.map((note) => {
-                  const pos = getNotePosition(note.note);
+                  const pos = getNotePosition(note.note.note, note.note.octave);
                   if (!pos) return null;
 
                   return (
@@ -384,7 +401,8 @@ export function PianoWithRhythm({
                       }}
                     >
                       <span className="text-primary-foreground">
-                        {note.note}
+                        {note.note.note}
+                        {note.note.octave}
                       </span>
                     </div>
                   );
@@ -407,96 +425,10 @@ export function PianoWithRhythm({
             </div>
 
             {/* Piano Keyboard */}
-            <div className="relative flex">
-              {/* White keys */}
-              {WHITE_KEYS.map((key, index) => {
-                const fullNote = `${key.note}${key.octave}`;
-                const highlighted = isHighlighted(fullNote);
-                const active = isActive(fullNote);
-
-                return (
-                  <button
-                    key={fullNote}
-                    onClick={() => {
-                      handleKeyPress(fullNote);
-                      checkNoteHit(fullNote);
-                    }}
-                    className={`
-                      relative h-36 border border-border rounded-b-lg
-                      transition-all duration-100 flex flex-col items-center justify-end pb-2
-                      ${
-                        highlighted
-                          ? active
-                            ? "bg-primary shadow-[0_0_20px_var(--primary)]"
-                            : "bg-primary/30 hover:bg-primary/40"
-                          : active
-                            ? "bg-muted"
-                            : "bg-foreground hover:bg-foreground/90"
-                      }
-                      ${active ? "translate-y-1" : ""}
-                    `}
-                    style={{ width: WHITE_KEY_WIDTH }}
-                    aria-label={`Play ${fullNote}`}
-                  >
-                    <span
-                      className={`text-xs font-medium ${highlighted ? "text-primary-foreground" : "text-background"}`}
-                    >
-                      {key.note}
-                    </span>
-                    {highlighted && (
-                      <span className="absolute top-2 w-2 h-2 rounded-full bg-primary-foreground" />
-                    )}
-                  </button>
-                );
-              })}
-
-              {/* Black keys */}
-              {KEYBOARD_KEYS.filter((k) => k.isBlack).map((key) => {
-                const fullNote = `${key.note}${key.octave}`;
-                const highlighted = isHighlighted(fullNote);
-                const active = isActive(fullNote);
-                const pos = getNotePosition(fullNote);
-                if (!pos) return null;
-
-                return (
-                  <button
-                    key={fullNote}
-                    onClick={() => {
-                      handleKeyPress(fullNote);
-                      checkNoteHit(fullNote);
-                    }}
-                    className={`
-                      absolute h-24 rounded-b-md z-10
-                      transition-all duration-100 flex flex-col items-center justify-end pb-1
-                      ${
-                        highlighted
-                          ? active
-                            ? "bg-primary shadow-[0_0_15px_var(--primary)]"
-                            : "bg-primary/60 hover:bg-primary/70"
-                          : active
-                            ? "bg-muted"
-                            : "bg-background hover:bg-muted border border-border"
-                      }
-                      ${active ? "translate-y-1" : ""}
-                    `}
-                    style={{
-                      left: pos.x,
-                      width: BLACK_KEY_WIDTH,
-                    }}
-                    aria-label={`Play ${fullNote}`}
-                  >
-                    <span
-                      className={`text-[10px] font-medium ${highlighted ? "text-primary-foreground" : "text-foreground"}`}
-                    >
-                      {key.note}
-                    </span>
-                    {highlighted && (
-                      <span className="absolute top-2 w-1.5 h-1.5 rounded-full bg-primary-foreground" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <VirtualPiano
+              isHighlighted={isHighlighted}
+              onClickNote={checkNoteHit}
+            />
           </div>
         </div>
       </div>

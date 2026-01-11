@@ -129,7 +129,7 @@ export function TheoryTab({ masteredChords, onChordMastered }: TheoryTabProps) {
 
           {/* Right: Interactive keyboard */}
           <div className="xl:col-span-3">
-            <TheoryKeyboard chord={currentChord} chordName={selectedChord} />
+            <TheoryKeyboard chord={currentChord} />
           </div>
         </div>
       )}
