@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { ChordData } from "@/lib/music-data";
+import { areEquivalentKeys } from "@/lib/key-identity";
 
 interface TheoryKeyboardProps {
   chord: ChordData;
@@ -33,9 +34,9 @@ export function TheoryKeyboard({ chord, chordName }: TheoryKeyboardProps) {
   const blackKeys = PIANO_KEYS.filter((k) => k.type === "black");
   const totalWidth = whiteKeys.length * WHITE_KEY_WIDTH;
 
-  const isChordNote = (note: string) => {
-    return chord.notes.some(
-      (n) => n === note || n === note.replace("#", "") || note === n + "#",
+  const findChordNote = (noteInKeyboard: string) => {
+    return chord.notes.find((chordNote) =>
+      areEquivalentKeys(chordNote, noteInKeyboard),
     );
   };
 
@@ -58,7 +59,9 @@ export function TheoryKeyboard({ chord, chordName }: TheoryKeyboardProps) {
   };
 
   const getNoteLabel = (note: string) => {
-    const index = chord.notes.indexOf(note);
+    const index = chord.notes.findIndex((chordNote) =>
+      areEquivalentKeys(chordNote, note),
+    );
     if (index === -1) return null;
     const labels = ["Root", "3rd", "5th", "7th"];
     return labels[index];
@@ -80,7 +83,8 @@ export function TheoryKeyboard({ chord, chordName }: TheoryKeyboardProps) {
       >
         <div className="h-16 relative">
           {PIANO_KEYS.map((key) => {
-            if (!isChordNote(key.note)) return null;
+            const chordNote = findChordNote(key.note);
+            if (!chordNote) return null;
             const x = getKeyPosition(key);
             const width =
               key.type === "white" ? WHITE_KEY_WIDTH : BLACK_KEY_WIDTH;
@@ -97,7 +101,7 @@ export function TheoryKeyboard({ chord, chordName }: TheoryKeyboardProps) {
                 }}
               >
                 <div className="bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm font-bold shadow-lg shadow-primary/30">
-                  {key.note}
+                  {chordNote}
                 </div>
                 {label && (
                   <div className="text-xs text-muted-foreground mt-1">
@@ -117,7 +121,7 @@ export function TheoryKeyboard({ chord, chordName }: TheoryKeyboardProps) {
       >
         {/* White keys */}
         {whiteKeys.map((key, i) => {
-          const isInChord = isChordNote(key.note);
+          const isInChord = findChordNote(key.note);
           const isActive = activeKeys.includes(key.note);
 
           return (
@@ -153,7 +157,7 @@ export function TheoryKeyboard({ chord, chordName }: TheoryKeyboardProps) {
 
         {/* Black keys */}
         {blackKeys.map((key) => {
-          const isInChord = isChordNote(key.note);
+          const isInChord = findChordNote(key.note);
           const isActive = activeKeys.includes(key.note);
           const x = getKeyPosition(key);
 

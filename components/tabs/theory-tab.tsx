@@ -66,31 +66,37 @@ export function TheoryTab({ masteredChords, onChordMastered }: TheoryTabProps) {
         <div className="grid grid-cols-2 gap-6">
           {/* Chord selector */}
           <div className="grid grid-rows-2 gap-2">
-            <div className="flex flex-wrap gap-2">
-              {MAJOR_CHORDS.map((chord) => {
-                return (
-                  <ChordButton
-                    key={chord}
-                    chord={chord}
-                    handleChordSelect={handleChordSelect}
-                    masteredChords={masteredChords}
-                    selectedChord={selectedChord}
-                  />
-                );
-              })}
+            <div>
+              <h4 className="text-sm text-foreground mb-1">Majors</h4>
+              <div className="grid grid-cols-6 gap-2">
+                {MAJOR_CHORDS.map((chord) => {
+                  return (
+                    <ChordButton
+                      key={chord}
+                      chord={chord}
+                      handleChordSelect={handleChordSelect}
+                      masteredChords={masteredChords}
+                      selectedChord={selectedChord}
+                    />
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {MINOR_CHORDS.map((chord) => {
-                return (
-                  <ChordButton
-                    key={chord}
-                    chord={chord}
-                    handleChordSelect={handleChordSelect}
-                    masteredChords={masteredChords}
-                    selectedChord={selectedChord}
-                  />
-                );
-              })}
+            <div>
+              <h4 className="text-sm text-foreground mb-1">Minors</h4>
+              <div className="grid grid-cols-6 gap-2">
+                {MINOR_CHORDS.map((chord) => {
+                  return (
+                    <ChordButton
+                      key={chord}
+                      chord={chord}
+                      handleChordSelect={handleChordSelect}
+                      masteredChords={masteredChords}
+                      selectedChord={selectedChord}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
 
