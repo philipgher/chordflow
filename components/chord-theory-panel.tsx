@@ -65,7 +65,7 @@ export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
                 className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center"
               >
                 <span className="text-sm font-bold text-primary-foreground">
-                  {note}
+                  {note.key}
                 </span>
               </div>
             ))}
@@ -83,7 +83,9 @@ export function ChordTheoryPanel({ chord, chordName }: ChordTheoryPanelProps) {
                 <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-foreground">
                   {finger}
                 </span>
-                <span className="text-muted-foreground">{chord.notes[i]}</span>
+                <span className="text-muted-foreground">
+                  {chord.notes[i].key}
+                </span>
               </div>
             ))}
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { Progression } from "@/lib/music-data";
+import type { Note, Progression } from "@/lib/music-data";
 
 interface RhythmLaneProps {
   progression: Progression;
@@ -9,12 +9,12 @@ interface RhythmLaneProps {
   isPlaying: boolean;
   tempo: number;
   onChordChange: (index: number) => void;
-  onNoteHit: (note: string) => void;
+  onNoteHit: (note: Note) => void;
 }
 
 interface FallingNote {
   id: string;
-  note: string;
+  note: Note;
   lane: number;
   y: number;
   hit: boolean;

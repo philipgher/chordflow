@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChordData } from "@/lib/music-data";
+import type { ChordData, Note } from "@/lib/music-data";
 import { areEquivalentKeys } from "@/lib/key-identity";
 import {
   getNotePosition,
@@ -14,13 +14,13 @@ interface TheoryKeyboardProps {
 }
 
 export function TheoryKeyboard({ chord }: TheoryKeyboardProps) {
-  const findChordNote = (noteInKeyboard: string) => {
+  const findChordNote = (noteInKeyboard: Note) => {
     return chord.notes.find((chordNote) =>
       areEquivalentKeys(chordNote, noteInKeyboard),
     );
   };
 
-  const getNoteLabel = (note: string) => {
+  const getNoteLabel = (note: Note) => {
     const index = chord.notes.findIndex((chordNote) =>
       areEquivalentKeys(chordNote, note),
     );
@@ -29,7 +29,7 @@ export function TheoryKeyboard({ chord }: TheoryKeyboardProps) {
     return labels[index];
   };
 
-  const isHighlighted = (note: string) => {
+  const isHighlighted = (note: Note) => {
     return (
       chord.notes.find((chordNote) => areEquivalentKeys(chordNote, note)) !==
       undefined
@@ -54,17 +54,17 @@ export function TheoryKeyboard({ chord }: TheoryKeyboardProps) {
           >
             <div className="h-16 relative">
               {KEYBOARD_KEYS.map((key) => {
-                const chordNote = findChordNote(key.note);
+                const chordNote = findChordNote(key);
                 if (!chordNote) return null;
 
-                const notePosition = getNotePosition(key.note, key.octave);
+                const notePosition = getNotePosition(key);
                 if (!notePosition) return null;
 
-                const label = getNoteLabel(key.note);
+                const label = getNoteLabel(key);
 
                 return (
                   <div
-                    key={key.note + key.octave}
+                    key={key.key + key.octave}
                     className="absolute flex flex-col items-center animate-bounce"
                     style={{
                       left: notePosition.x,
@@ -73,7 +73,7 @@ export function TheoryKeyboard({ chord }: TheoryKeyboardProps) {
                     }}
                   >
                     <div className="bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm font-bold shadow-lg shadow-primary/30">
-                      {chordNote}
+                      {chordNote.key}
                     </div>
                     {label && (
                       <div className="text-xs text-muted-foreground mt-1">
@@ -100,7 +100,7 @@ export function TheoryKeyboard({ chord }: TheoryKeyboardProps) {
           <div key={i} className="text-center flex flex-col items-center">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-2">
               <span className="text-lg font-bold text-primary">
-                {chord.notes[i]}
+                {chord.notes[i].key}
               </span>
             </div>
             <div className="text-xs text-muted-foreground">{interval.name}</div>

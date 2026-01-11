@@ -55,9 +55,8 @@ export function SheetMusic({
           <div className="absolute inset-0 flex items-center justify-center pl-16 pr-8">
             <div className="flex items-end gap-1">
               {chord.notes.map((note, i) => {
-                const baseNote = note.replace(/[0-9#b]/g, "");
-                const hasSharp = note.includes("#");
-                const position = NOTE_POSITIONS[baseNote] || 6;
+                const hasSharp = note.key.includes("#");
+                const position = NOTE_POSITIONS[note.key] || 6;
 
                 return (
                   <div

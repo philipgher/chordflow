@@ -1,8 +1,8 @@
+import { Note } from "@/lib/music-data";
 import {
   BLACK_KEY_WIDTH,
   BLACK_KEYS,
   getNotePosition,
-  KEYBOARD_KEYS,
   WHITE_KEY_WIDTH,
   WHITE_KEYS,
 } from "@/lib/virtual-piano";
@@ -12,16 +12,16 @@ export const VirtualPiano = ({
   isHighlighted,
   onClickNote,
 }: {
-  isHighlighted?: (note: string) => boolean;
-  onClickNote?: (note: string) => void;
+  isHighlighted?: (note: Note) => boolean;
+  onClickNote?: (note: Note) => void;
 }) => {
-  const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
+  const [pressedKeys, setPressedKeys] = useState<Set<Note>>(new Set());
 
-  const handleKeyPress = useCallback((note: string) => {
+  const handleKeyPress = useCallback((note: Note) => {
     setPressedKeys((prev) => new Set(prev).add(note));
   }, []);
 
-  const handleKeyRelease = useCallback((note: string) => {
+  const handleKeyRelease = useCallback((note: Note) => {
     setPressedKeys((prev) => {
       const newSet = new Set(prev);
       newSet.delete(note);
@@ -31,20 +31,59 @@ export const VirtualPiano = ({
 
   // Keyboard shortcuts
   useEffect(() => {
-    const keyMap: Record<string, string> = {
-      a: "C4",
-      w: "C#4",
-      s: "D4",
-      e: "D#4",
-      d: "E4",
-      f: "F4",
-      t: "F#4",
-      g: "G4",
-      y: "G#4",
-      h: "A4",
-      u: "A#4",
-      j: "B4",
-      k: "C5",
+    const keyMap: Record<string, Note> = {
+      a: {
+        key: "C",
+        octave: 4,
+      },
+      w: {
+        key: "C#",
+        octave: 4,
+      },
+      s: {
+        key: "D",
+        octave: 4,
+      },
+      e: {
+        key: "D#",
+        octave: 4,
+      },
+      d: {
+        key: "E",
+        octave: 4,
+      },
+      f: {
+        key: "F",
+        octave: 4,
+      },
+      t: {
+        key: "F#",
+        octave: 4,
+      },
+      g: {
+        key: "G",
+        octave: 4,
+      },
+      y: {
+        key: "G#",
+        octave: 4,
+      },
+      h: {
+        key: "A",
+        octave: 4,
+      },
+      u: {
+        key: "A#",
+        octave: 4,
+      },
+      j: {
+        key: "B",
+        octave: 4,
+      },
+      k: {
+        key: "C",
+        octave: 5,
+      },
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,7 +106,7 @@ export const VirtualPiano = ({
   }, [handleKeyPress, handleKeyRelease, pressedKeys]);
 
   const isActive = useCallback(
-    (note: string) => {
+    (note: Note) => {
       return pressedKeys.has(note);
     },
     [pressedKeys],
@@ -77,16 +116,15 @@ export const VirtualPiano = ({
     <div className="relative flex">
       {/* White keys */}
       {WHITE_KEYS.map((key, index) => {
-        const fullNote = `${key.note}${key.octave}`;
-        const highlighted = isHighlighted?.(fullNote);
-        const active = isActive(fullNote);
+        const highlighted = isHighlighted?.(key);
+        const active = isActive(key);
 
         return (
           <button
-            key={fullNote}
+            key={key.key + key.octave}
             onClick={() => {
-              handleKeyPress(fullNote);
-              onClickNote?.(fullNote);
+              handleKeyPress(key);
+              onClickNote?.(key);
             }}
             className={`
               relative h-36 border border-border rounded-b-lg
@@ -103,12 +141,12 @@ export const VirtualPiano = ({
               ${active ? "translate-y-1" : ""}
             `}
             style={{ width: WHITE_KEY_WIDTH }}
-            aria-label={`Play ${fullNote}`}
+            aria-label={`Play ${key.key}${key.octave}`}
           >
             <span
               className={`text-xs font-medium ${highlighted ? "text-primary-foreground" : "text-background"}`}
             >
-              {key.note}
+              {key.key}
             </span>
             {highlighted && (
               <span className="absolute top-2 w-2 h-2 rounded-full bg-primary-foreground" />
@@ -119,18 +157,17 @@ export const VirtualPiano = ({
 
       {/* Black keys */}
       {BLACK_KEYS.map((key) => {
-        const fullNote = `${key.note}${key.octave}`;
-        const highlighted = isHighlighted?.(fullNote);
-        const active = isActive(fullNote);
-        const pos = getNotePosition(key.note, key.octave);
+        const highlighted = isHighlighted?.(key);
+        const active = isActive(key);
+        const pos = getNotePosition(key);
         if (!pos) return null;
 
         return (
           <button
-            key={fullNote}
+            key={key.key + key.octave}
             onClick={() => {
-              handleKeyPress(fullNote);
-              onClickNote?.(fullNote);
+              handleKeyPress(key);
+              onClickNote?.(key);
             }}
             className={`
               absolute h-24 rounded-b-md z-10
@@ -150,12 +187,12 @@ export const VirtualPiano = ({
               left: pos.x,
               width: BLACK_KEY_WIDTH,
             }}
-            aria-label={`Play ${fullNote}`}
+            aria-label={`Play ${key.key}${key.octave}`}
           >
             <span
               className={`text-[10px] font-medium ${highlighted ? "text-primary-foreground" : "text-foreground"}`}
             >
-              {key.note}
+              {key.key}
             </span>
             {highlighted && (
               <span className="absolute top-2 w-1.5 h-1.5 rounded-full bg-primary-foreground" />

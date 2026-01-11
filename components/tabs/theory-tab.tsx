@@ -6,7 +6,7 @@ import { ChordTheoryPanel } from "../chord-theory-panel";
 import { SheetMusic } from "../sheet-music";
 import { TheoryKeyboard } from "../theory-keyboard";
 import { CircleOfFifths } from "../circle-of-fifths";
-import { Lock, CheckCircle2, Sparkles } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 interface TheoryTabProps {
   masteredChords: string[];

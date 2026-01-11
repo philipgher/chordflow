@@ -1,5 +1,46 @@
+export type Keys =
+  | "C"
+  | "Cm"
+  | "C#"
+  | "C#m"
+  | "Db"
+  | "Dbm"
+  | "D"
+  | "Dm"
+  | "D#"
+  | "D#m"
+  | "Eb"
+  | "Ebm"
+  | "E"
+  | "Em"
+  | "F"
+  | "Fm"
+  | "F#"
+  | "F#m"
+  | "Gb"
+  | "Gbm"
+  | "G"
+  | "Gm"
+  | "G#"
+  | "G#m"
+  | "Ab"
+  | "Abm"
+  | "A"
+  | "Am"
+  | "A#"
+  | "A#m"
+  | "Bb"
+  | "Bbm"
+  | "B"
+  | "Bm";
+
+export type Note = {
+  key: Keys;
+  octave: number;
+};
+
 export interface ChordData {
-  notes: string[];
+  notes: Note[];
   fullName: string;
   type: "major" | "minor" | "diminished" | "augmented" | "7th";
   intervals: { name: string; semitones: number }[];
@@ -16,9 +57,21 @@ export interface Progression {
 
 export const CHORD_DATA: Record<string, ChordData> = {
   // ===== MAJOR KEYS =====
-
   C: {
-    notes: ["C", "E", "G"],
+    notes: [
+      {
+        key: "C",
+        octave: 4,
+      },
+      {
+        key: "E",
+        octave: 4,
+      },
+      {
+        key: "G",
+        octave: 4,
+      },
+    ],
     fullName: "C Major",
     type: "major",
     intervals: [
@@ -31,7 +84,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   G: {
-    notes: ["G", "B", "D"],
+    notes: [
+      {
+        key: "G",
+        octave: 4,
+      },
+      {
+        key: "B",
+        octave: 4,
+      },
+      {
+        key: "D",
+        octave: 5,
+      },
+    ],
     fullName: "G Major",
     type: "major",
     intervals: [
@@ -44,7 +110,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   D: {
-    notes: ["D", "F#", "A"],
+    notes: [
+      {
+        key: "D",
+        octave: 4,
+      },
+      {
+        key: "F#",
+        octave: 4,
+      },
+      {
+        key: "A",
+        octave: 4,
+      },
+    ],
     fullName: "D Major",
     type: "major",
     intervals: [
@@ -57,7 +136,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   A: {
-    notes: ["A", "C#", "E"],
+    notes: [
+      {
+        key: "A",
+        octave: 4,
+      },
+      {
+        key: "C#",
+        octave: 5,
+      },
+      {
+        key: "E",
+        octave: 5,
+      },
+    ],
     fullName: "A Major",
     type: "major",
     intervals: [
@@ -70,7 +162,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   E: {
-    notes: ["E", "G#", "B"],
+    notes: [
+      {
+        key: "E",
+        octave: 4,
+      },
+      {
+        key: "G#",
+        octave: 4,
+      },
+      {
+        key: "B",
+        octave: 4,
+      },
+    ],
     fullName: "E Major",
     type: "major",
     intervals: [
@@ -83,7 +188,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   B: {
-    notes: ["B", "D#", "F#"],
+    notes: [
+      {
+        key: "B",
+        octave: 4,
+      },
+      {
+        key: "D#",
+        octave: 5,
+      },
+      {
+        key: "F#",
+        octave: 5,
+      },
+    ],
     fullName: "B Major",
     type: "major",
     intervals: [
@@ -96,7 +214,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   "F#": {
-    notes: ["F#", "A#", "C#"],
+    notes: [
+      {
+        key: "F#",
+        octave: 4,
+      },
+      {
+        key: "A#",
+        octave: 4,
+      },
+      {
+        key: "C#",
+        octave: 5,
+      },
+    ],
     fullName: "F# Major",
     type: "major",
     intervals: [
@@ -109,7 +240,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Db: {
-    notes: ["Db", "F", "Ab"],
+    notes: [
+      {
+        key: "Db",
+        octave: 4,
+      },
+      {
+        key: "F",
+        octave: 4,
+      },
+      {
+        key: "Ab",
+        octave: 4,
+      },
+    ],
     fullName: "Db Major",
     type: "major",
     intervals: [
@@ -122,7 +266,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Ab: {
-    notes: ["Ab", "C", "Eb"],
+    notes: [
+      {
+        key: "Ab",
+        octave: 4,
+      },
+      {
+        key: "C",
+        octave: 5,
+      },
+      {
+        key: "Eb",
+        octave: 5,
+      },
+    ],
     fullName: "Ab Major",
     type: "major",
     intervals: [
@@ -135,7 +292,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Eb: {
-    notes: ["Eb", "G", "Bb"],
+    notes: [
+      {
+        key: "Eb",
+        octave: 4,
+      },
+      {
+        key: "G",
+        octave: 4,
+      },
+      {
+        key: "Bb",
+        octave: 4,
+      },
+    ],
     fullName: "Eb Major",
     type: "major",
     intervals: [
@@ -148,7 +318,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Bb: {
-    notes: ["Bb", "D", "F"],
+    notes: [
+      {
+        key: "Bb",
+        octave: 4,
+      },
+      {
+        key: "D",
+        octave: 5,
+      },
+      {
+        key: "F",
+        octave: 5,
+      },
+    ],
     fullName: "Bb Major",
     type: "major",
     intervals: [
@@ -161,7 +344,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   F: {
-    notes: ["F", "A", "C"],
+    notes: [
+      {
+        key: "F",
+        octave: 4,
+      },
+      {
+        key: "A",
+        octave: 4,
+      },
+      {
+        key: "C",
+        octave: 5,
+      },
+    ],
     fullName: "F Major",
     type: "major",
     intervals: [
@@ -176,7 +372,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   // ===== RELATIVE MINORS =====
 
   Am: {
-    notes: ["A", "C", "E"],
+    notes: [
+      {
+        key: "A",
+        octave: 4,
+      },
+      {
+        key: "C",
+        octave: 5,
+      },
+      {
+        key: "E",
+        octave: 5,
+      },
+    ],
     fullName: "A Minor",
     type: "minor",
     intervals: [
@@ -189,7 +398,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Em: {
-    notes: ["E", "G", "B"],
+    notes: [
+      {
+        key: "E",
+        octave: 4,
+      },
+      {
+        key: "G",
+        octave: 4,
+      },
+      {
+        key: "B",
+        octave: 4,
+      },
+    ],
     fullName: "E Minor",
     type: "minor",
     intervals: [
@@ -202,7 +424,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Bm: {
-    notes: ["B", "D", "F#"],
+    notes: [
+      {
+        key: "B",
+        octave: 4,
+      },
+      {
+        key: "D",
+        octave: 5,
+      },
+      {
+        key: "F#",
+        octave: 5,
+      },
+    ],
     fullName: "B Minor",
     type: "minor",
     intervals: [
@@ -215,7 +450,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   "F#m": {
-    notes: ["F#", "A", "C#"],
+    notes: [
+      {
+        key: "F#",
+        octave: 4,
+      },
+      {
+        key: "A",
+        octave: 4,
+      },
+      {
+        key: "C#",
+        octave: 5,
+      },
+    ],
     fullName: "F# Minor",
     type: "minor",
     intervals: [
@@ -228,7 +476,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   "C#m": {
-    notes: ["C#", "E", "G#"],
+    notes: [
+      {
+        key: "C#",
+        octave: 4,
+      },
+      {
+        key: "E",
+        octave: 4,
+      },
+      {
+        key: "G#",
+        octave: 4,
+      },
+    ],
     fullName: "C# Minor",
     type: "minor",
     intervals: [
@@ -241,7 +502,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   "G#m": {
-    notes: ["G#", "B", "D#"],
+    notes: [
+      {
+        key: "G#",
+        octave: 4,
+      },
+      {
+        key: "B",
+        octave: 4,
+      },
+      {
+        key: "D#",
+        octave: 5,
+      },
+    ],
     fullName: "G# Minor",
     type: "minor",
     intervals: [
@@ -254,7 +528,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Bbm: {
-    notes: ["Bb", "Db", "F"],
+    notes: [
+      {
+        key: "Bb",
+        octave: 4,
+      },
+      {
+        key: "Db",
+        octave: 5,
+      },
+      {
+        key: "F",
+        octave: 5,
+      },
+    ],
     fullName: "Bb Minor",
     type: "minor",
     intervals: [
@@ -267,7 +554,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   "D#m": {
-    notes: ["D#", "F#", "A#"],
+    notes: [
+      {
+        key: "D#",
+        octave: 4,
+      },
+      {
+        key: "F#",
+        octave: 4,
+      },
+      {
+        key: "A#",
+        octave: 4,
+      },
+    ],
     fullName: "D# Minor",
     type: "minor",
     intervals: [
@@ -280,7 +580,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Fm: {
-    notes: ["F", "Ab", "C"],
+    notes: [
+      {
+        key: "F",
+        octave: 4,
+      },
+      {
+        key: "Ab",
+        octave: 4,
+      },
+      {
+        key: "C",
+        octave: 5,
+      },
+    ],
     fullName: "F Minor",
     type: "minor",
     intervals: [
@@ -293,7 +606,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Cm: {
-    notes: ["C", "Eb", "G"],
+    notes: [
+      {
+        key: "C",
+        octave: 4,
+      },
+      {
+        key: "Eb",
+        octave: 4,
+      },
+      {
+        key: "G",
+        octave: 4,
+      },
+    ],
     fullName: "C Minor",
     type: "minor",
     intervals: [
@@ -306,7 +632,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Gm: {
-    notes: ["G", "Bb", "D"],
+    notes: [
+      {
+        key: "G",
+        octave: 4,
+      },
+      {
+        key: "Bb",
+        octave: 4,
+      },
+      {
+        key: "D",
+        octave: 5,
+      },
+    ],
     fullName: "G Minor",
     type: "minor",
     intervals: [
@@ -319,7 +658,20 @@ export const CHORD_DATA: Record<string, ChordData> = {
   },
 
   Dm: {
-    notes: ["D", "F", "A"],
+    notes: [
+      {
+        key: "D",
+        octave: 4,
+      },
+      {
+        key: "F",
+        octave: 4,
+      },
+      {
+        key: "A",
+        octave: 4,
+      },
+    ],
     fullName: "D Minor",
     type: "minor",
     intervals: [

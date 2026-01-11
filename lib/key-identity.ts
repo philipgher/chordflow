@@ -1,7 +1,9 @@
+import { Keys, Note } from "./music-data";
+
 type PitchClass = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
 const KEY_TO_PITCH_CLASS: Record<
-  string,
+  Keys,
   { pc: PitchClass; quality: "major" | "minor" }
 > = {
   // Major
@@ -43,14 +45,14 @@ const KEY_TO_PITCH_CLASS: Record<
   Abm: { pc: 8, quality: "minor" },
 };
 
-export function getKeyIdentity(key: string): string | null {
+export function getKeyIdentity(key: Keys): string | null {
   const entry = KEY_TO_PITCH_CLASS[key];
   if (!entry) return null;
   return `${entry.pc}-${entry.quality}`;
 }
 
-export function areEquivalentKeys(a: string, b: string): boolean {
-  const aId = getKeyIdentity(a);
-  const bId = getKeyIdentity(b);
-  return aId !== null && aId === bId;
+export function areEquivalentKeys(a: Note, b: Note): boolean {
+  const aId = getKeyIdentity(a.key);
+  const bId = getKeyIdentity(b.key);
+  return aId === bId && a.octave === b.octave;
 }

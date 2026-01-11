@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { Progression } from "@/lib/music-data";
+import type { Note, Progression } from "@/lib/music-data";
 import {
   getNotePosition,
   KEYBOARD_WIDTH,
@@ -22,124 +22,124 @@ interface PianoWithRhythmProps {
 
 interface FallingNote {
   id: string;
-  note: { note: string; octave: number };
+  note: Note;
   y: number;
   hit: boolean;
   chordIndex: number;
 }
 
 // Chord to notes mapping with octave info
-function getChordNotes(chordName: string): { note: string; octave: number }[] {
-  const noteMap: Record<string, { note: string; octave: number }[]> = {
+function getChordNotes(chordName: string): Note[] {
+  const noteMap: Record<string, Note[]> = {
     C: [
       {
-        note: "C",
+        key: "C",
         octave: 4,
       },
       {
-        note: "E",
+        key: "E",
         octave: 4,
       },
       {
-        note: "G",
+        key: "G",
         octave: 4,
       },
     ],
     G: [
       {
-        note: "G",
+        key: "G",
         octave: 4,
       },
       {
-        note: "B",
+        key: "B",
         octave: 4,
       },
       {
-        note: "D",
+        key: "D",
         octave: 5,
       },
     ],
     Am: [
       {
-        note: "A",
+        key: "A",
         octave: 4,
       },
       {
-        note: "C",
+        key: "C",
         octave: 5,
       },
       {
-        note: "E",
+        key: "E",
         octave: 5,
       },
     ],
     F: [
       {
-        note: "F",
+        key: "F",
         octave: 4,
       },
       {
-        note: "A",
+        key: "A",
         octave: 4,
       },
       {
-        note: "C",
+        key: "C",
         octave: 5,
       },
     ],
     Dm: [
       {
-        note: "D",
+        key: "D",
         octave: 4,
       },
       {
-        note: "F",
+        key: "F",
         octave: 4,
       },
       {
-        note: "A",
+        key: "A",
         octave: 4,
       },
     ],
     Em: [
       {
-        note: "E",
+        key: "E",
         octave: 4,
       },
       {
-        note: "G",
+        key: "G",
         octave: 4,
       },
       {
-        note: "B",
+        key: "B",
         octave: 4,
       },
     ],
     D: [
       {
-        note: "D",
+        key: "D",
         octave: 4,
       },
       {
-        note: "F#",
+        key: "F#",
         octave: 4,
       },
       {
-        note: "A",
+        key: "A",
         octave: 4,
       },
     ],
     A: [
       {
-        note: "A",
+        key: "A",
         octave: 4,
       },
       {
-        note: "C#",
+        key: "C#",
         octave: 5,
       },
       {
-        note: "E",
+        key: "E",
         octave: 5,
       },
     ],
@@ -148,15 +148,15 @@ function getChordNotes(chordName: string): { note: string; octave: number }[] {
   return (
     noteMap[chordName] || [
       {
-        note: "C",
+        key: "C",
         octave: 4,
       },
       {
-        note: "E",
+        key: "E",
         octave: 4,
       },
       {
-        note: "G",
+        key: "G",
         octave: 4,
       },
     ]
@@ -172,9 +172,7 @@ export function PianoWithRhythm({
   onChordChange,
 }: PianoWithRhythmProps) {
   const [notes, setNotes] = useState<FallingNote[]>([]);
-  const [notesInHitZone, setNotesInHitZone] = useState<
-    { note: string; octave: number }[]
-  >([]);
+  const [notesInHitZone, setNotesInHitZone] = useState<Note[]>([]);
   const animationRef = useRef<number | undefined>(undefined);
   const noteIdRef = useRef(0);
 
@@ -183,16 +181,14 @@ export function PianoWithRhythm({
   const currentChordNotes = getChordNotes(chordName);
 
   const isHighlighted = useCallback(
-    (note: string) => {
+    (note: Note) => {
       if (!isPlaying) {
         return currentChordNotes.some((currentChordNote) => {
-          const fullCurrentChordNote = `${currentChordNote.note}${currentChordNote.octave}`;
-          return areEquivalentKeys(fullCurrentChordNote, note);
+          return areEquivalentKeys(currentChordNote, note);
         });
       }
       return notesInHitZone.some((noteInHitZone) => {
-        const fullNoteInHitZone = `${noteInHitZone.note}${noteInHitZone.octave}`;
-        return areEquivalentKeys(fullNoteInHitZone, note);
+        return areEquivalentKeys(noteInHitZone, note);
       });
     },
     [notesInHitZone, isPlaying, currentChordNotes],
@@ -290,16 +286,15 @@ export function PianoWithRhythm({
   ]);
 
   // Handle clicking on a falling note lane (hit detection)
-  const checkNoteHit = useCallback((noteToCheck: string) => {
+  const checkNoteHit = useCallback((noteToCheck: Note) => {
     const hitZoneTop = 240;
     const hitZoneBottom = 300;
 
     setNotes((prev) => {
       const updated = [...prev];
       const noteIndex = updated.findIndex((n) => {
-        const fullNote = `${n.note.note}${n.note.octave}`;
         return (
-          fullNote === noteToCheck &&
+          areEquivalentKeys(n.note, noteToCheck) &&
           !n.hit &&
           n.y >= hitZoneTop &&
           n.y <= hitZoneBottom
@@ -349,7 +344,7 @@ export function PianoWithRhythm({
 
               {!isPlaying &&
                 currentChordNotes.map((note, idx) => {
-                  const pos = getNotePosition(note.note, note.octave);
+                  const pos = getNotePosition(note);
                   if (!pos) return null;
 
                   return (
@@ -370,7 +365,7 @@ export function PianoWithRhythm({
                       }}
                     >
                       <span className="text-primary-foreground">
-                        {note.note}
+                        {note.key}
                         {note.octave}
                       </span>
                     </div>
@@ -380,7 +375,7 @@ export function PianoWithRhythm({
               {/* Falling notes - only shown when playing */}
               {isPlaying &&
                 notes.map((note) => {
-                  const pos = getNotePosition(note.note.note, note.note.octave);
+                  const pos = getNotePosition(note.note);
                   if (!pos) return null;
 
                   return (
@@ -401,7 +396,7 @@ export function PianoWithRhythm({
                       }}
                     >
                       <span className="text-primary-foreground">
-                        {note.note.note}
+                        {note.note.key}
                         {note.note.octave}
                       </span>
                     </div>

@@ -1,11 +1,12 @@
 "use client";
 
+import { Note } from "@/lib/music-data";
 import { useCallback, useEffect, useState } from "react";
 
 interface PianoKeyboardProps {
   activeNotes: string[];
   highlightedNotes: string[];
-  onNotePlay: (note: string) => void;
+  onNotePlay: (note: Note) => void;
   chordName: string;
 }
 
@@ -22,7 +23,7 @@ export function PianoKeyboard({
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
 
   const isHighlighted = useCallback(
-    (note: string) => {
+    (note: Note) => {
       const baseNote = note.replace(/[0-9]/g, "");
       return highlightedNotes.some((n) => n.replace(/[0-9]/g, "") === baseNote);
     },
@@ -30,14 +31,14 @@ export function PianoKeyboard({
   );
 
   const isActive = useCallback(
-    (note: string) => {
+    (note: Note) => {
       return activeNotes.includes(note) || pressedKeys.has(note);
     },
     [activeNotes, pressedKeys],
   );
 
   const handleKeyPress = useCallback(
-    (note: string) => {
+    (note: Note) => {
       setPressedKeys((prev) => new Set(prev).add(note));
       onNotePlay(note);
 
