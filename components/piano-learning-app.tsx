@@ -2,11 +2,10 @@
 
 import { useState, useCallback } from "react";
 import { Header } from "./header";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { TheoryTab } from "./tabs/theory-tab";
 import { ProgressionsTab } from "./tabs/progressions-tab";
 import { RhythmTab } from "./tabs/rhythm-tab";
-import { BookOpen, Music, Drum } from "lucide-react";
 
 export function PianoLearningApp() {
   const [activeTab, setActiveTab] = useState("theory");
@@ -39,15 +38,6 @@ export function PianoLearningApp() {
     },
     [unlockedProgressions],
   );
-
-  // const handleChordUnlocked = useCallback(
-  //   (chord: string) => {
-  //     if (!unlockedChords.includes(chord)) {
-  //       setUnlockedChords((prev) => [...prev, chord]);
-  //     }
-  //   },
-  //   [unlockedChords],
-  // );
 
   return (
     <Tabs
