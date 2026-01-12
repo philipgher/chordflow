@@ -10,12 +10,6 @@ import { RhythmTab } from "./tabs/rhythm-tab";
 export function PianoLearningApp() {
   const [activeTab, setActiveTab] = useState("theory");
 
-  // const [unlockedChords, setUnlockedChords] = useState<string[]>([
-  //   "C",
-  //   "G",
-  //   "Am",
-  //   "F",
-  // ]);
   const [masteredChords, setMasteredChords] = useState<string[]>([]);
   const [unlockedProgressions, setUnlockedProgressions] = useState<string[]>([
     "I-V-vi-IV",

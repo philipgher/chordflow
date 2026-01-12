@@ -2,7 +2,8 @@
 
 import type React from "react";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, act } from "react";
+import { useInterval } from "usehooks-ts";
 import { CHORD_DATA, ChordData, Note, PROGRESSIONS } from "@/lib/music-data";
 import { SheetMusic } from "../sheet-music";
 import {
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { VirtualPiano } from "../virtual-piano";
 import { areEquivalentKeys } from "@/lib/key-identity";
+import { log } from "console";
 
 interface ProgressionsTabProps {
   unlockedProgressions: string[];
@@ -59,196 +61,119 @@ const PATTERNS: {
   },
 ];
 
-export function ProgressionsTab({
-  unlockedProgressions,
-  onProgressionUnlocked,
-}: ProgressionsTabProps) {
+export function ProgressionsTab() {
   const [selectedProgression, setSelectedProgression] = useState("I-V-vi-IV");
-  const [loopChordA, setLoopChordA] = useState(0);
-  const [loopChordB, setLoopChordB] = useState(1);
-  const [currentChord, setCurrentChord] = useState<"A" | "B">("A");
   const [isPlaying, setIsPlaying] = useState(false);
+
   const [tempo, setTempo] = useState(60); // BPM for transitions
   const [pattern, setPattern] = useState<PlayingPattern>("block");
 
   // Pattern step for animation (for arpeggio, broken, bass-chord)
   const [patternStep, setPatternStep] = useState(0);
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const patternIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
   const progression = PROGRESSIONS[selectedProgression];
-  const chordAName = progression.chords[loopChordA];
-  const chordBName = progression.chords[loopChordB];
-  const chordA = CHORD_DATA[chordAName];
-  const chordB = CHORD_DATA[chordBName];
+  const [chordIndex, setChordIndex] = useState(0);
+  const chordName = progression.chords[chordIndex];
+  const chordToPlay = CHORD_DATA[chordName];
 
-  const activeChord = currentChord === "A" ? chordA : chordB;
-  const nextChord = currentChord === "A" ? chordB : chordA;
+  // Refs to avoid stale closures and double-advance
+  const isPlayingRef = useRef(isPlaying);
+  const chordIndexRef = useRef(chordIndex);
+  const patternStepRef = useRef(patternStep);
 
-  // Find common tones between current and next chord
-  const commonTones = activeChord.notes.filter((note) =>
-    nextChord.notes.includes(note),
-  );
-  const movingFromCurrent = activeChord.notes.filter(
-    (note) => !nextChord.notes.includes(note),
-  );
-  const movingToNext = nextChord.notes.filter(
-    (note) => !activeChord.notes.includes(note),
-  );
+  // Guard against double-calls in the same interval tick
+  const lastAdvanceTickRef = useRef<number | null>(null);
 
-  // Pattern animation
   useEffect(() => {
-    if (pattern !== "block") {
-      const patternLength = pattern === "broken" ? 4 : 3;
-      const stepDuration = 60000 / tempo / patternLength;
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
-      patternIntervalRef.current = setInterval(() => {
-        setPatternStep((prev) => (prev + 1) % patternLength);
-      }, stepDuration);
-
-      return () => {
-        if (patternIntervalRef.current)
-          clearInterval(patternIntervalRef.current);
-      };
-    } else {
-      setPatternStep(0);
-    }
-  }, [pattern, tempo]);
-
-  // Auto-advance loop
   useEffect(() => {
-    if (isPlaying) {
-      const transitionTime = (60000 / tempo) * 4; // 4 beats per chord
-      intervalRef.current = setInterval(() => {
-        setCurrentChord((prev) => (prev === "A" ? "B" : "A"));
-        setPatternStep(0);
-      }, transitionTime);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
+    chordIndexRef.current = chordIndex;
+  }, [chordIndex]);
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isPlaying, tempo]);
+  useEffect(() => {
+    patternStepRef.current = patternStep;
+  }, [patternStep]);
 
-  const handleProgressionSelect = useCallback(
-    (key: string) => {
-      setSelectedProgression(key);
-      setLoopChordA(0);
-      setLoopChordB(1);
-      setCurrentChord("A");
-      setIsPlaying(false);
-      if (!unlockedProgressions.includes(key)) {
-        onProgressionUnlocked(key);
+  const manualAdvance = useCallback(
+    (tickId?: number) => {
+      // If called from interval, guard against double-call in same tick
+      if (typeof tickId === "number") {
+        if (lastAdvanceTickRef.current === tickId) {
+          return; // already advanced for this tick
+        }
+        lastAdvanceTickRef.current = tickId;
       }
+
+      console.log("ADVANCE CHORD", { tickId });
+
+      setChordIndex((prev) => {
+        const next = (prev + 1) % progression.chords.length;
+        chordIndexRef.current = next;
+        return next;
+      });
+      setPatternStep(0);
+      patternStepRef.current = 0;
     },
-    [unlockedProgressions, onProgressionUnlocked],
+    [progression.chords.length],
   );
+
+  // Interval delay in ms for the current pattern (null = no interval)
+  const patternDelay: number | null = (() => {
+    // if (!isPlaying) return null;
+    if (pattern === "block") return null;
+
+    const patternLength = chordToPlay.notes.length;
+    const stepDuration = 60000 / tempo / patternLength; // ms per step
+    return stepDuration;
+  })();
+
+  // Internal counter to identify each tick uniquely
+  const tickIdRef = useRef(0);
+
+  // Advance pattern steps and chords using useInterval from usehooks-ts
+  useInterval(() => {
+    // If not playing or in block pattern, do nothing
+    if (!isPlayingRef.current || pattern === "block") {
+      return;
+    }
+
+    const tickId = ++tickIdRef.current;
+
+    const currentChordIdx = chordIndexRef.current;
+    const currentChordName = progression.chords[currentChordIdx];
+    const currentChord = CHORD_DATA[currentChordName];
+    const patternLength = currentChord.notes.length;
+
+    const nextStep = patternStepRef.current + 1;
+
+    if (nextStep >= patternLength) {
+      // End of pattern -> advance chord, reset step
+      manualAdvance(tickId);
+    } else {
+      // Just bump the pattern step
+      setPatternStep((prev) => {
+        const updated = prev + 1;
+        patternStepRef.current = updated;
+        return updated;
+      });
+    }
+  }, patternDelay);
+
+  const handleProgressionSelect = useCallback((key: string) => {
+    setSelectedProgression(key);
+    setChordIndex(0);
+    setIsPlaying(false);
+  }, []);
 
   const togglePlay = () => setIsPlaying((prev) => !prev);
 
-  const manualAdvance = () => {
-    setCurrentChord((prev) => (prev === "A" ? "B" : "A"));
-    setPatternStep(0);
-  };
-
   const resetLoop = () => {
-    setCurrentChord("A");
+    setChordIndex(0);
     setPatternStep(0);
     setIsPlaying(false);
   };
-
-  // Get which notes should be highlighted based on pattern
-  const getActivePatternNotes = (note: Note, chord: ChordData): boolean => {
-    if (pattern === "block") {
-      return (
-        chord.notes.find((activeChordNote) =>
-          areEquivalentKeys(activeChordNote, note),
-        ) !== undefined
-      );
-    }
-    if (pattern === "arpeggio") {
-      return areEquivalentKeys(
-        note,
-        chord.notes[patternStep % chord.notes.length],
-      );
-    }
-    if (pattern === "bass-chord") {
-      if (patternStep === 0) {
-        return areEquivalentKeys(note, chord.notes[0]);
-      }
-      const chordNotes = chord.notes.slice(1);
-      return chordNotes.some((chordNote) => areEquivalentKeys(note, chordNote));
-    }
-    if (pattern === "broken") {
-      // 1-5-8-5 pattern (root, fifth, octave, fifth)
-      const patternNotes = [0, 2, 0, 2]; // indices
-      return areEquivalentKeys(note, chord.notes[patternNotes[patternStep]]);
-    }
-    return (
-      chord.notes.find((activeChordNote) =>
-        areEquivalentKeys(activeChordNote, note),
-      ) !== undefined
-    );
-  };
-
-  // Mini keyboard component for transition view
-  const MiniKeyboard = ({
-    chord,
-    chordName,
-    isActive,
-    commonTones: common,
-    movingNotes,
-  }: {
-    chord: typeof chordA;
-    chordName: string;
-    isActive: boolean;
-    commonTones: Note[];
-    movingNotes: Note[];
-  }) => (
-    <div
-      className={`rounded-xl border p-4 transition-all mx-auto ${isActive ? "bg-card border-primary shadow-lg shadow-primary/20" : "bg-secondary/50 border-border"}`}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span
-          className={`text-lg font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
-        >
-          {chordName}
-        </span>
-        <span className="text-sm text-muted-foreground">{chord.fullName}</span>
-      </div>
-
-      <VirtualPiano
-        isHighlighted={(note: Note) => getActivePatternNotes(note, chord)}
-      />
-
-      {/* Note labels */}
-      <div className="flex justify-center gap-2 mt-3">
-        {chord.notes.map((note, i) => {
-          const isCommon = common.includes(note);
-          const isMoving = movingNotes.includes(note);
-
-          return (
-            <div
-              key={i}
-              className={`px-2 py-1 rounded text-xs font-medium ${
-                isCommon
-                  ? "bg-green-500/20 text-green-400 border border-green-500/50"
-                  : isMoving
-                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/50"
-                    : "bg-primary/20 text-primary"
-              }`}
-            >
-              {note.key}
-              {isCommon && " (stays)"}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-6">
@@ -290,49 +215,18 @@ export function ProgressionsTab({
 
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Chord A:</span>
+            <span className="text-sm text-muted-foreground">Chord:</span>
             <div className="flex gap-1">
               {progression.chords.map((chord, i) => (
                 <button
                   key={i}
                   onClick={() => {
-                    setLoopChordA(i);
-                    if (i === loopChordB)
-                      setLoopChordB((i + 1) % progression.chords.length);
-                    setCurrentChord("A");
+                    setChordIndex(i);
                   }}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    loopChordA === i
+                    chordIndex === i
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary hover:bg-muted"
-                  }`}
-                >
-                  {chord}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <ArrowRight className="w-5 h-5 text-muted-foreground" />
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Chord B:</span>
-            <div className="flex gap-1">
-              {progression.chords.map((chord, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setLoopChordB(i);
-                    if (i === loopChordA)
-                      setLoopChordA((i + 1) % progression.chords.length);
-                  }}
-                  disabled={i === loopChordA}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    loopChordB === i
-                      ? "bg-primary text-primary-foreground"
-                      : i === loopChordA
-                        ? "bg-muted opacity-50 cursor-not-allowed"
-                        : "bg-secondary hover:bg-muted"
                   }`}
                 >
                   {chord}
@@ -381,73 +275,27 @@ export function ProgressionsTab({
       {/* Main transition view */}
       <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="font-semibold text-foreground">
-              Transition Practice
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {commonTones.length > 0
-                ? `${commonTones.length} note${commonTones.length > 1 ? "s" : ""} stay in place (green)`
-                : "No common tones - all fingers move"}
-            </p>
-          </div>
-
-          {/* Legend */}
-          <div className="flex gap-4 text-xs">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-green-500/40 border border-green-500" />
-              <span className="text-muted-foreground">Stays</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-amber-500/40 border border-amber-500" />
-              <span className="text-muted-foreground">Moves</span>
-            </div>
-          </div>
+          <h3 className="font-semibold text-foreground">Transition Practice</h3>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          <MiniKeyboard
-            chord={chordA}
-            chordName={chordAName}
-            isActive={currentChord === "A"}
-            commonTones={commonTones}
-            movingNotes={
-              currentChord === "A" ? movingFromCurrent : movingToNext
-            }
-          />
+          {(() => {
+            // Determine pattern length for current pattern
+            const patternLength = pattern === "broken" ? 4 : 3;
+            const totalSteps = pattern === "block" ? 1 : patternLength * 2;
 
-          <div className="hidden md:flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <ArrowDown
-                className={`w-8 h-8 transition-all ${currentChord === "A" ? "text-primary animate-pulse" : "text-muted-foreground"}`}
+            return (
+              <MiniKeyboard
+                pattern={pattern}
+                patternStep={patternStep}
+                chord={chordToPlay}
+                chordName={chordName}
+                isActive={true}
+                // movingNotes={movingFromCurrent}
               />
-              <span className="text-xs text-muted-foreground">Transition</span>
-            </div>
-          </div>
-
-          <MiniKeyboard
-            chord={chordB}
-            chordName={chordBName}
-            isActive={currentChord === "B"}
-            commonTones={commonTones}
-            movingNotes={
-              currentChord === "B" ? movingFromCurrent : movingToNext
-            }
-          />
+            );
+          })()}
         </div>
-
-        {/* Transition tips */}
-        {commonTones.length > 0 && (
-          <div className="mt-4 p-3 bg-green-500/10 rounded-lg border border-green-500/30">
-            <p className="text-sm text-green-400">
-              <strong>Tip:</strong> Keep your finger on{" "}
-              {commonTones.join(" and ")} -{" "}
-              {commonTones.length === 1 ? "it stays" : "they stay"} the same!
-              Only move {movingFromCurrent.join(" and ")} to{" "}
-              {movingToNext.join(" and ")}.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Controls */}
@@ -499,21 +347,14 @@ export function ProgressionsTab({
       </div>
 
       {/* Sheet music comparison */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div
-          className={`transition-all ${currentChord === "A" ? "ring-2 ring-primary rounded-xl" : ""}`}
-        >
-          <SheetMusic chord={chordA} chordName={chordAName} />
-        </div>
-        <div
-          className={`transition-all ${currentChord === "B" ? "ring-2 ring-primary rounded-xl" : ""}`}
-        >
-          <SheetMusic chord={chordB} chordName={chordBName} />
+      <div className="grid grid-cols-1 gap-4">
+        <div className={`transition-all`}>
+          <SheetMusic chord={chordToPlay} chordName={chordName} />
         </div>
       </div>
 
       {/* Voice leading insight */}
-      <div className="bg-card rounded-xl border border-border p-4">
+      {/*<div className="bg-card rounded-xl border border-border p-4">
         <h3 className="font-semibold text-foreground mb-3">Voice Leading</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {activeChord.notes.map((note, i) => {
@@ -554,7 +395,90 @@ export function ProgressionsTab({
             );
           })}
         </div>
-      </div>
+      </div>*/}
     </div>
   );
 }
+
+// Mini keyboard component for transition view
+// Accepts stepOffset to allow each keyboard to use a different step
+const MiniKeyboard = ({
+  pattern,
+  patternStep,
+  chord,
+  chordName,
+  isActive,
+  stepOffset = 0,
+  patternLengthOverride,
+}: {
+  pattern: PlayingPattern;
+  patternStep: number;
+  chord: typeof chordA;
+  chordName: string;
+  isActive: boolean;
+  stepOffset?: number;
+  patternLengthOverride?: number;
+}) => {
+  // Accepts an optional stepOverride to allow offsetting the step for each keyboard
+  const getActivePatternNotes = (
+    note: Note,
+    chord: ChordData,
+    stepOverride?: number,
+  ): boolean => {
+    const step = typeof stepOverride === "number" ? stepOverride : patternStep;
+    if (pattern === "block") {
+      return (
+        chord.notes.find((activeChordNote) =>
+          areEquivalentKeys(activeChordNote, note),
+        ) !== undefined
+      );
+    }
+    if (pattern === "arpeggio") {
+      return areEquivalentKeys(note, chord.notes[step % chord.notes.length]);
+    }
+    if (pattern === "bass-chord") {
+      if (step === 0) {
+        return areEquivalentKeys(note, chord.notes[0]);
+      }
+      const chordNotes = chord.notes.slice(1);
+      return chordNotes.some((chordNote) => areEquivalentKeys(note, chordNote));
+    }
+    if (pattern === "broken") {
+      // 1-5-8-5 pattern (root, fifth, octave, fifth)
+      const patternNotes = [0, 2, 0, 2]; // indices
+      return areEquivalentKeys(note, chord.notes[patternNotes[step]]);
+    }
+    return (
+      chord.notes.find((activeChordNote) =>
+        areEquivalentKeys(activeChordNote, note),
+      ) !== undefined
+    );
+  };
+  return (
+    <div
+      className={`rounded-xl border p-4 transition-all mx-auto ${isActive ? "bg-card border-primary shadow-lg shadow-primary/20" : "bg-secondary/50 border-border"}`}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span
+          className={`text-lg font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
+        >
+          {chordName}
+        </span>
+        <span className="text-sm text-muted-foreground">{chord.fullName}</span>
+      </div>
+
+      <VirtualPiano
+        isHighlighted={(note: Note) =>
+          getActivePatternNotes(
+            note,
+            chord,
+            // Only offset for non-block patterns
+            pattern === "block"
+              ? undefined
+              : (patternStep + stepOffset) % (patternLengthOverride ?? 3),
+          )
+        }
+      />
+    </div>
+  );
+};
