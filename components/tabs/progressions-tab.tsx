@@ -70,7 +70,10 @@ export function ProgressionsTab({
   const [isPlaying, setIsPlaying] = useState(false);
   const [tempo, setTempo] = useState(60); // BPM for transitions
   const [pattern, setPattern] = useState<PlayingPattern>("block");
+
+  // Pattern step for animation (for arpeggio, broken, bass-chord)
   const [patternStep, setPatternStep] = useState(0);
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const patternIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -80,9 +83,7 @@ export function ProgressionsTab({
   const chordA = CHORD_DATA[chordAName];
   const chordB = CHORD_DATA[chordBName];
 
-  const activeChordName = currentChord === "A" ? chordAName : chordBName;
   const activeChord = currentChord === "A" ? chordA : chordB;
-  const nextChordName = currentChord === "A" ? chordBName : chordAName;
   const nextChord = currentChord === "A" ? chordB : chordA;
 
   // Find common tones between current and next chord
@@ -178,7 +179,8 @@ export function ProgressionsTab({
       if (patternStep === 0) {
         return areEquivalentKeys(note, chord.notes[0]);
       }
-      return areEquivalentKeys(note, chord.notes.slice(1)[0]);
+      const chordNotes = chord.notes.slice(1);
+      return chordNotes.some((chordNote) => areEquivalentKeys(note, chordNote));
     }
     if (pattern === "broken") {
       // 1-5-8-5 pattern (root, fifth, octave, fifth)
